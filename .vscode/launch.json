@@ -5,7 +5,7 @@
 			"name": "(Windows) Launch",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceRoot}/build/psOff_logan.exe",
+			"program": "${workspaceRoot}/build/.install/psOff_logan.exe",
 			"args": [
 				// "C:\\Users\\igorg\\Downloads\\20250227-191725.000.p7d", // Child process, Phyre Engine
 				// "C:\\Users\\igorg\\Downloads\\20250227-113851.000.p7d", // Main process, validation errors, shader gen errors
@@ -14,7 +14,7 @@
 				"C:\\Users\\igorg\\Downloads\\20250226-165944.000.p7d", // Child process, Unity, Mono, pointers
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceRoot}/build/libp7d",
+			"cwd": "${workspaceRoot}/build/.install/",
 			"environment": [],
 			"console": "integratedTerminal",
 			"preLaunchTask": "CMake: build"
