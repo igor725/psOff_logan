@@ -155,9 +155,6 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
 
       for (const auto& [aType, aSize]: strinfo->second.formatInfos) {
         switch (aType) {
-          case 0x00: {
-            throw std::runtime_error("Unknown argument!");
-          } break;
           case 0x01:   // char (int8)
           case 0x02:   // char16
           case 0x03:   // int16
@@ -239,8 +236,8 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
           case 0x0c: { // char32
             skip(aSize), cread += aSize;
           } break;
-          case 0x0d: { // intmax
-            skip(sizeof(uintmax_t)), cread += sizeof(uintmax_t);
+          default: {
+            throw std::runtime_error(std::format("Unknown argument: {}!", si.subtype));
           } break;
         }
       }
