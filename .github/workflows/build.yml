@@ -21,7 +21,7 @@ jobs:
       - name: Configure
         run: |
           echo "::add-matcher::.github/matchers/cmake.json"
-          cmake -S. -B build/ -GNinja -DCMAKE_INSTALL_PREFIX=build/.install/ -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake -S. -Bbuild/ -GNinja -DCMAKE_INSTALL_PREFIX=build/.install/ -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
       - name: Build
         run: |
