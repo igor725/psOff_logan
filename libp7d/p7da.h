@@ -1,5 +1,6 @@
 #pragma once
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
 
 #include "p7d.h"
 #include "third_party/json.hpp"
@@ -43,12 +44,15 @@ class P7DumpAnalyser: public P7Dump {
 
   void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) override final;
 
+  virtual std::string spit() const override final;
+
   virtual void run() override final;
 
   private:
   nlohmann::json m_jsonInfo;
 };
 
+#ifndef __EMSCRIPTEN__
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -56,3 +60,4 @@ class P7DumpAnalyser: public P7Dump {
 #endif
 
 EXPORT std::unique_ptr<P7Dump> createAnalyser(std::filesystem::path const& fpath);
+#endif

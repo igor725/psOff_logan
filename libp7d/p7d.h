@@ -1,11 +1,13 @@
 #pragma once
 
+#include <bit>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 constexpr uint64_t P7D_HDR_LE = 5031273339032906918ull;
 constexpr uint64_t P7D_HDR_BE = 11974213706116289093ull;
@@ -80,6 +82,8 @@ class P7Dump {
   virtual void run();
 
   virtual void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) = 0;
+
+  virtual std::string spit() const = 0;
 
   private:
   template <typename T>

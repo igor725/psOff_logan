@@ -7,7 +7,7 @@
 			"request": "launch",
 			"program": "${workspaceRoot}/build/test.exe",
 			"args": [
-				// "C:\\Users\\igorg\\Downloads\\20250227-191725.000.p7d", // Child process, phyre engine
+				"C:\\Users\\igorg\\Downloads\\20250227-191725.000.p7d", // Child process, phyre engine
 				// "C:\\Users\\igorg\\Downloads\\20250227-113851.000.p7d", // Main process, validation errors, shader gen errors
 				// "C:\\Users\\igorg\\Downloads\\20250227-224312.000.p7d", // Child process, unity
 				// "C:\\Users\\igorg\\Downloads\\20241215-202940.000.p7d", // Child process, gamemaker, no trophy key

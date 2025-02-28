@@ -1,4 +1,8 @@
 {
-  "editor.tabSize": 2,
-  "editor.insertSpaces": false
+	"editor.tabSize": 2,
+	"editor.insertSpaces": false,
+	"cmake.generator": "Ninja",
+	"cmake.configureSettings": {
+		"CMAKE_EXPORT_COMPILE_COMMANDS": 1
+	}
 }

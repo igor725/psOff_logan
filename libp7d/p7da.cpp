@@ -1,9 +1,9 @@
 #include "p7da.h"
 
 #include <codecvt>
-#include <cstdio>
 #include <locale>
 #include <memory>
+#include <string_view>
 
 namespace {
 std::string toUTF8(std::basic_string<char16_t> const& source) {
@@ -139,10 +139,24 @@ void P7DumpAnalyser::run() {
   if (_hintTrophyKey)
     hints.push_back("You don't have the trophy key installed, this can cause problems in games, also you won't be able to see the list of trophies you have "
                     "received. To solve this problem, check #faq channel in on Discord Server.");
-
-  printf("%s", m_jsonInfo.dump(4, ' ', true).c_str());
 }
 
+std::string P7DumpAnalyser::spit() const {
+  return m_jsonInfo.dump(2, ' ', true);
+}
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <emscripten/bind.h>
+
+EMSCRIPTEN_BINDINGS(EM_libp7d) {
+  emscripten::class_<P7DumpAnalyser>("P7DumpAnalyser")
+      .constructor<std::filesystem::path const&>()
+      .function("run", &P7DumpAnalyser::run)
+      .function("spit", &P7DumpAnalyser::spit);
+}
+#else
 std::unique_ptr<P7Dump> createAnalyser(std::filesystem::path const& fpath) {
   return std::make_unique<P7DumpAnalyser>(fpath);
 }
+#endif
