@@ -1,0 +1,20 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "(Windows) Launch",
+			"type": "cppvsdbg",
+			"request": "launch",
+			"program": "build/test.exe",
+			"args": [
+				// "C:\\Users\\igorg\\Downloads\\20250227-191725.000.p7d", // Child process, phyre engine
+				"C:\\Users\\igorg\\Downloads\\20250227-113851.000.p7d", // Main process, validation errors, shader gen errors
+			],
+			"stopAtEntry": false,
+			"cwd": "${workspaceRoot}",
+			"environment": [],
+			"console": "integratedTerminal",
+			"preLaunchTask": "CMake: build"
+		}
+	]
+}
