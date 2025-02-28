@@ -1,11 +1,13 @@
 #pragma once
 
+#include <algorithm>
 #include <bit>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <list>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -93,9 +95,23 @@ class P7Dump {
   }
 
   template <typename T>
+  struct AlignedBytes {
+    alignas(T) unsigned char data[sizeof(T)];
+  };
+
+  template <typename T>
+  constexpr T swap_endian(T value) noexcept {
+    static_assert(std::is_trivially_copyable_v<T>, "value is not regular type");
+
+    AlignedBytes<T> bytes = std::bit_cast<AlignedBytes<T>>(value);
+    std::reverse(std::begin(bytes.data), std::end(bytes.data));
+    return std::bit_cast<T>(bytes);
+  }
+
+  template <typename T>
   T& read_endian(T& buf) {
     m_file.read((char*)&buf, sizeof(buf));
-    if (m_isBigEndian) buf = std::byteswap(buf);
+    if (m_isBigEndian) buf = swap_endian(buf);
     return buf;
   }
 

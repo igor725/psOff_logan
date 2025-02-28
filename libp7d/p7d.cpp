@@ -77,10 +77,10 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
 
   switch (si.subtype) {
     case 0x00: { // Stream Info
-      read(stream.info.time), cread += sizeof(stream.info.time);
-      read(stream.info.timer), cread += sizeof(stream.info.timer);
-      read(stream.info.timer_freq), cread += sizeof(stream.info.timer_freq);
-      read(stream.info.flags), cread += sizeof(stream.info.flags);
+      read_endian(stream.info.time), cread += sizeof(stream.info.time);
+      read_endian(stream.info.timer), cread += sizeof(stream.info.timer);
+      read_endian(stream.info.timer_freq), cread += sizeof(stream.info.timer_freq);
+      read_endian(stream.info.flags), cread += sizeof(stream.info.flags);
       stream.info.name = fixed_string<p7string>(0x80), cread += 0x80;
     } break;
 
@@ -88,10 +88,10 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
       P7Line line;
 
       uint16_t lineId, numFmt;
-      read(lineId), cread += sizeof(lineId);
-      read(line.fileLine), cread += sizeof(line.fileLine);
-      read(line.moduleId), cread += sizeof(line.moduleId);
-      read(numFmt), cread += sizeof(numFmt);
+      read_endian(lineId), cread += sizeof(lineId);
+      read_endian(line.fileLine), cread += sizeof(line.fileLine);
+      read_endian(line.moduleId), cread += sizeof(line.moduleId);
+      read_endian(numFmt), cread += sizeof(numFmt);
 
       if (si.size > cread) {
         if (numFmt) {
@@ -131,12 +131,12 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
     case 0x02: { // Data
       TraceLineData tsd;
 
-      read(tsd.id), cread += sizeof(tsd.id);
+      read_endian(tsd.id), cread += sizeof(tsd.id);
       read(tsd.level), cread += sizeof(tsd.level);
       read(tsd.cpu), cread += sizeof(tsd.cpu);
-      read(tsd.threadid), cread += sizeof(tsd.threadid);
-      read(tsd.sequence), cread += sizeof(tsd.sequence);
-      read(tsd.timer), cread += sizeof(tsd.timer);
+      read_endian(tsd.threadid), cread += sizeof(tsd.threadid);
+      read_endian(tsd.sequence), cread += sizeof(tsd.sequence);
+      read_endian(tsd.timer), cread += sizeof(tsd.timer);
 
       auto strinfo = stream.lines.find(tsd.id);
       if (strinfo == stream.lines.end()) {
@@ -160,13 +160,14 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
           case 0x03:   // int16
           case 0x04:   // int32
           case 0x05:   // int64
-          case 0x07: { // pointer
+          case 0x07:   // pointer
+          case 0x0c: { // char32
             int64_t i64;
-            insert_to_stack<int64_t>(improvised_stack, read(i64)), cread += sizeof(i64);
+            insert_to_stack<int64_t>(improvised_stack, read_endian(i64)), cread += sizeof(i64);
           } break;
           case 0x06: { // double
             double dbl;
-            insert_to_stack<double>(improvised_stack, read(dbl));
+            insert_to_stack<double>(improvised_stack, read_endian(dbl));
             cread += sizeof(dbl);
           } break;
           case 0x08: { // utf16 string
@@ -175,7 +176,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             char16_t u16char;
             while (true) {
               cread += sizeof(u16char);
-              if (read(u16char) != u'\0') {
+              if (read_endian(u16char) != u'\0') {
                 u16str.push_back(u16char);
                 continue;
               }
@@ -223,7 +224,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             char32_t u32char;
             while (true) {
               cread += sizeof(u32char);
-              if (read(u32char) != U'\0') {
+              if (read_endian(u32char) != U'\0') {
                 u32str.push_back(u32char);
                 continue;
               }
@@ -232,9 +233,6 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             }
 
             insert_to_stack<char32_t*>(improvised_stack, std::any_cast<std::u32string&>(improvised_storage.emplace_back(std::move(u32str))).data());
-          } break;
-          case 0x0c: { // char32
-            skip(aSize), cread += aSize;
           } break;
           default: {
             throw std::runtime_error(std::format("Unknown argument: {}!", si.subtype));
