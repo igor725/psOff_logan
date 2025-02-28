@@ -28,7 +28,7 @@ void P7Dump::run() {
 
   StreamInfo si;
   try {
-    while (!m_file.eof()) {
+    while (m_file.peek() != EOF) {
       read(si);
 
       auto currStream = m_streams.find(si.channel);

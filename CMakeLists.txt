@@ -10,4 +10,5 @@ set(CMAKE_INSTALL_MESSAGE LAZY)
 add_executable(test
 	main.cpp
 	p7d.cpp
+	p7da.cpp
 )
