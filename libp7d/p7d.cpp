@@ -163,7 +163,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
           case 0x03:   // int16
           case 0x04:   // int32
           case 0x05:   // int64
-          case 0x07: { // int64
+          case 0x07: { // pointer
             int64_t i64;
             insert_to_stack<int64_t>(improvised_stack, read(i64)), cread += sizeof(i64);
           } break;
