@@ -116,7 +116,7 @@ class P7Dump {
   template <typename T>
   T& read_endian(T& buf) {
     m_file.read((char*)&buf, sizeof(buf));
-    if (m_endian != std::endian::native) buf = swap_endian(buf);
+    if ((sizeof(T) > 1) && (m_endian != std::endian::native)) buf = swap_endian(buf);
     return buf;
   }
 
