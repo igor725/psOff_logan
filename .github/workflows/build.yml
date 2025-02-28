@@ -32,11 +32,11 @@ jobs:
       - name: Install
         run: |
           echo "::add-matcher::.github/matchers/cmake.json"
-          cmake --install build/ --prefix build/.install/
+          cmake --install build/ --prefix build/install/
 
       - name: Build release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: psOff_logan
           path: |
-            build/.install/*
+            build/install/*
