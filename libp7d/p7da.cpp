@@ -58,8 +58,9 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
   auto& mod = stream.modules[tsd.modid];
 
   if (_isChildprocess) { // Handle child logs
-    if (stream.info.name.contains(u"TTY")) {
+    if (stream.info.name.contains(u"tty")) {
       if (!_gmakerEngineDetected && out.contains(u"YoYo Games PS4 Runner")) _gmakerEngineDetected = true;
+      if (!_unrealEngineDetected && out.starts_with(u"AdditionalArgs") && out.contains(u".uproject")) _unrealEngineDetected = true;
     } else {
       if (mod.name.contains("pthread")) {
         if (out.starts_with(u"--> thread")) { // Thread run log
@@ -91,7 +92,8 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
           else if (out.contains(u".app.title = "))
             m_jsonInfo["title_name"] = toUTF8(value);
         }
-      } else if (mod.name.contains("FileManager")) {
+      } else if (mod.name.contains("ExceptionHandler")) {
+        if (!_exceptionDetected && out.starts_with(u"Faulty instruction:")) _exceptionDetected = true;
       } else if (mod.name.contains("libSceSysmodule")) {
         if (out.starts_with(u"loading id = ")) {
           if (!_dialogSdkDetected && out.contains(u"Dialog")) _dialogSdkDetected = true;
@@ -126,12 +128,14 @@ void P7DumpAnalyser::run() {
     if (_cryEngineDetected) labels.push_back("engine-cry");
     if (_phyreEngineDetected) labels.push_back("engine-phyre");
     if (_gmakerEngineDetected) labels.push_back("engine-gamemaker");
+    if (_exceptionDetected) labels.push_back("exception");
     if (_fmodSdkDetected) labels.push_back("sdk-fmod");
     if (_monoSdkDetected) labels.push_back("sdk-mono");
   } else {
-    if (_inputNotFoundHint) hints.push_back("One of your users has the input device set incorrectly, if you can't control the app, this could be the cause");
+    if (_inputNotFoundHint)
+      hints.push_back("One of your users has the input device set incorrectly, if you can't control the PS4 app, this could be the cause.");
     if (_nvidiaHint)
-      hints.push_back("You are using an NVIDIA graphics card, these cards have many issues on our emulator that may not be present on AMD cards");
+      hints.push_back("You are using an NVIDIA graphics card, these cards have many issues on our emulator that may not be present on AMD cards.");
     if (_vkValidation) labels.push_back("graphics");
     if (_shaderGenTodo) labels.push_back("shader-gen");
   }
