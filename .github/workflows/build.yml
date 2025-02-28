@@ -21,7 +21,7 @@ jobs:
       - name: Configure
         run: |
           echo "::add-matcher::.github/matchers/cmake.json"
-          cmake -S. -Bbuild/ -GNinja -DCMAKE_INSTALL_PREFIX=build/.install/ -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake -S. -Bbuild/ -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
       - name: Build
         run: |
@@ -32,7 +32,7 @@ jobs:
       - name: Install
         run: |
           echo "::add-matcher::.github/matchers/cmake.json"
-          cmake --install build/
+          cmake --install build/ --prefix build/.install/
 
       - name: Build release artifacts
         uses: actions/upload-artifact@v4
