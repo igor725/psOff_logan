@@ -30,6 +30,8 @@ class P7DumpAnalyser: public P7Dump {
     // SDKs
     bool _fmodSdkDetected   : 1 = false;
     bool _monoSdkDetected   : 1 = false;
+    bool _criSdkDetected    : 1 = false;
+    bool _wwiseSdkDetected  : 1 = false;
     bool _dialogSdkDetected : 1 = false;
 
     // Problems

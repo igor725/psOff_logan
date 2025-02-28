@@ -68,6 +68,8 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
           if (!_unityEngineDetected) {
             if (out.contains(u"UnityWorker")) _unityEngineDetected = true;
             if (!_unityEngineDetected && out.contains(u"UnityGfx")) _unityEngineDetected = true;
+            if (!_criSdkDetected && (out.contains(u"CriThread") || out.contains(u"CRI FS"))) _criSdkDetected = true;
+            if (!_wwiseSdkDetected && out.contains(u"Wwise")) _wwiseSdkDetected = true;
           }
           if (!_phyreEngineDetected) {
             if (out.contains(u"PhyreEngine")) _phyreEngineDetected = true;
@@ -112,7 +114,7 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
       m_jsonInfo["user-gpu"] = toUTF8(std::basic_string_view<char16_t>(out.c_str() + out.find_first_of(u':') + 1));
     }
     if (!_inputNotFoundHint && out.contains(u"No pad with specified name was found")) _inputNotFoundHint = true;
-    if (!_shaderGenTodo && (mod.name == "sb2spirv") && out.contains(u"todo")) _shaderGenTodo = true;
+    if (!_shaderGenTodo && (mod.name == "sb2spirv") && (out.contains(u"todo") || out.contains(u"Instruction missing"))) _shaderGenTodo = true;
     if (!_vkValidation && (mod.name == "videoout") && out.contains(u"Validation Error: ")) _vkValidation = true;
   }
 }
@@ -132,6 +134,8 @@ void P7DumpAnalyser::run() {
     if (_exceptionDetected) labels.push_back("exception");
     if (_fmodSdkDetected) labels.push_back("sdk-fmod");
     if (_monoSdkDetected) labels.push_back("sdk-mono");
+    if (_criSdkDetected) labels.push_back("sdk-criware");
+    if (_wwiseSdkDetected) labels.push_back("sdk-wwise");
   } else {
     if (_inputNotFoundHint)
       hints.push_back("One of your users has the input device set incorrectly, if you can't control the PS4 app, this could be the cause.");
