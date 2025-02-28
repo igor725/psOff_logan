@@ -18,11 +18,21 @@ jobs:
         with:
           arch: x86_64
 
+      - name: Configure
+        run: |
+          echo "::add-matcher::.github/matchers/cmake.json"
+          cmake -S. -B build/ -GNinja -DCMAKE_INSTALL_PREFIX=build/.install/ -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
       - name: Build
         run: |
           echo "::add-matcher::.github/matchers/cmake.json"
           echo "::add-matcher::.github/matchers/compilers.json"
-          cmake -DCMAKE_INSTALL_PREFIX=build/.install/ --build build/ --config=RelWithDebInfo -j4 --target install
+          cmake --build build/ -j4
+
+      - name: Install
+        run: |
+          echo "::add-matcher::.github/matchers/cmake.json"
+          cmake --install build/
 
       - name: Build release artifacts
         uses: actions/upload-artifact@v4
