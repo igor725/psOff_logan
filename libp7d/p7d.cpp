@@ -162,7 +162,8 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
           case 0x02:   // char16
           case 0x03:   // int16
           case 0x04:   // int32
-          case 0x05: { // int64
+          case 0x05:   // int64
+          case 0x07: { // int64
             int64_t i64;
             insert_to_stack<int64_t>(improvised_stack, read(i64)), cread += sizeof(i64);
           } break;
@@ -170,9 +171,6 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             double dbl;
             insert_to_stack<double>(improvised_stack, read(dbl));
             cread += sizeof(dbl);
-          } break;
-          case 0x07: { // pvoid
-            skip(aSize), cread += aSize;
           } break;
           case 0x08: { // utf16 string
             p7string u16str;
@@ -255,10 +253,13 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
       render(stream, tsd, outstr);
     } break;
 
-    case 0x03: {
+    case 0x03: { // Verb packet? Wtf is this, dunno
     } break;
 
-    case 0x09: {
+    case 0x04: { // Close packet, we don't really care about those
+    } break;
+
+    case 0x09: { // UTC offset packet, used for time sync
     } break;
 
     case 0x07: { // Module
