@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(test LANGUAGES CXX)
+project(psOff_logan LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -12,10 +12,10 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 add_subdirectory(libp7d)
 
-add_executable(test
+add_executable(psOff_logan
 	main.cpp
 )
 
-add_dependencies(test p7d)
+add_dependencies(psOff_logan p7d)
 
-target_link_libraries(test PRIVATE p7d)
+target_link_libraries(psOff_logan PRIVATE p7d)
