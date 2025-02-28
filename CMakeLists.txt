@@ -19,3 +19,7 @@ add_executable(psOff_logan
 add_dependencies(psOff_logan p7d)
 
 target_link_libraries(psOff_logan PRIVATE p7d)
+
+install(TARGETS psOff_logan COMPONENT psOff_logan DESTINATION .)
+
+install(FILES $<TARGET_PDB_FILE:psOff_logan> DESTINATION debug OPTIONAL)

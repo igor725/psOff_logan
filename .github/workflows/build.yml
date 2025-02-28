@@ -1,0 +1,32 @@
+name: build release
+
+on:
+  push:
+
+jobs:
+  build:
+    name: psOff log analyser build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect MSVC (Windows)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86_64
+
+      - name: Build
+        run: |
+          echo "::add-matcher::tools/matchers/cmake.json"
+          echo "::add-matcher::tools/matchers/compilers.json"
+          cmake -DCMAKE_INSTALL_PREFIX=build/.install/ --build build/ --config=RelWithDebInfo -j4 --target install --
+
+      - name: Build release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: psOff_logan
+          path: |
+            build/.install/*

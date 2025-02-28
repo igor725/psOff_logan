@@ -3,6 +3,7 @@
 	"editor.insertSpaces": false,
 	"cmake.generator": "Ninja",
 	"cmake.configureSettings": {
+		"CMAKE_INSTALL_PREFIX": "${workspaceFolder}/build/.install",
 		"CMAKE_EXPORT_COMPILE_COMMANDS": 1
 	}
 }
