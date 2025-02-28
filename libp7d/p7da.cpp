@@ -60,7 +60,8 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
   if (_isChildprocess) { // Handle child logs
     if (stream.info.name.contains(u"tty")) {
       if (!_gmakerEngineDetected && out.contains(u"YoYo Games PS4 Runner")) _gmakerEngineDetected = true;
-      if (!_unrealEngineDetected && out.starts_with(u"AdditionalArgs") && out.contains(u".uproject")) _unrealEngineDetected = true;
+      if (!_unrealEngineDetected && out.starts_with(u"Additional") && out.contains(u".uproject")) _unrealEngineDetected = true;
+      if (!_unrealEngineDetected && out.contains(u"uecommandline.txt")) _unrealEngineDetected = true;
     } else {
       if (mod.name.contains("pthread")) {
         if (out.starts_with(u"--> thread")) { // Thread run log
