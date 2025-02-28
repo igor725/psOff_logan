@@ -8,8 +8,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  P7DumpAnalyser an(argv[1]);
-  an.run();
+  auto an = createAnalyser(argv[1]);
+  an->run();
 
   return 0;
 }

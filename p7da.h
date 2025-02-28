@@ -4,7 +4,8 @@
 #include "p7d.h"
 #include "third_party/json.hpp"
 
-#include <string_view>
+#include <filesystem>
+#include <memory>
 
 class P7DumpAnalyser: public P7Dump {
   struct /* Flags */ {
@@ -36,7 +37,9 @@ class P7DumpAnalyser: public P7Dump {
   };
 
   public:
-  P7DumpAnalyser(std::string_view fname): P7Dump(fname) {}
+  P7DumpAnalyser(std::filesystem::path const& fpath): P7Dump(fpath) {}
+
+  virtual ~P7DumpAnalyser() = default;
 
   void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) override final;
 
@@ -45,3 +48,11 @@ class P7DumpAnalyser: public P7Dump {
   private:
   nlohmann::json m_jsonInfo;
 };
+
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif
+
+EXPORT std::unique_ptr<P7Dump> createAnalyser(std::filesystem::path const& fpath);

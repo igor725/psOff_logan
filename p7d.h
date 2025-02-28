@@ -73,7 +73,9 @@ class P7Dump {
     std::list<p7string>                    formatted;
   };
 
-  P7Dump(std::filesystem::path const& path);
+  P7Dump(std::filesystem::path const& fpath);
+
+  virtual ~P7Dump() = default;
 
   void run();
 

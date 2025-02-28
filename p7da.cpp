@@ -3,6 +3,7 @@
 #include <codecvt>
 #include <cstdio>
 #include <locale>
+#include <memory>
 
 namespace {
 std::string toUTF8(std::basic_string<char16_t> const& source) {
@@ -140,4 +141,8 @@ void P7DumpAnalyser::run() {
                     "received. To solve this problem, check #faq channel in on Discord Server.");
 
   printf("%s", m_jsonInfo.dump(4, ' ', true).c_str());
+}
+
+std::unique_ptr<P7Dump> createAnalyser(std::filesystem::path const& fpath) {
+  return std::make_unique<P7DumpAnalyser>(fpath);
 }

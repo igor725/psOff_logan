@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <string>
 
-P7Dump::P7Dump(std::filesystem::path const& path): m_file(path, std::ios::in | std::ios::binary) {
+P7Dump::P7Dump(std::filesystem::path const& fpath): m_file(fpath, std::ios::in | std::ios::binary) {
   m_file.exceptions(std::ios::badbit | std::ios::failbit);
 }
 
