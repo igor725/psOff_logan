@@ -11,8 +11,13 @@
 #include <unordered_map>
 #include <vector>
 
-constexpr uint64_t P7D_HDR_LE = 5031273339032906918ull;
-constexpr uint64_t P7D_HDR_BE = 11974213706116289093ull;
+union P7Header {
+  uint8_t  data[8];
+  uint64_t raw;
+};
+
+constexpr P7Header P7D_HDR_LE = {.data = {0xa6, 0x2c, 0xf3, 0xec, 0x71, 0xac, 0xd2, 0x45}};
+constexpr P7Header P7D_HDR_BE = {.data = {0x45, 0xd2, 0xac, 0x71, 0xec, 0xf3, 0x2c, 0xa6}};
 
 class P7Dump {
   public:
@@ -111,7 +116,7 @@ class P7Dump {
   template <typename T>
   T& read_endian(T& buf) {
     m_file.read((char*)&buf, sizeof(buf));
-    if (m_isBigEndian) buf = swap_endian(buf);
+    if (m_endian != std::endian::native) buf = swap_endian(buf);
     return buf;
   }
 
@@ -155,9 +160,9 @@ class P7Dump {
   std::unordered_map<uint8_t, StreamStorage> m_streams;
 
   protected:
-  bool     m_isBigEndian = false;
-  uint32_t m_processId   = 0;
-  uint64_t m_createTime  = 0;
+  std::endian m_endian;
+  uint32_t    m_processId  = 0;
+  uint64_t    m_createTime = 0;
 
   p7string m_processName, m_hostName;
 };

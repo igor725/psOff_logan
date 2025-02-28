@@ -1,6 +1,7 @@
 #include "p7d.h"
 
 #include <any>
+#include <bit>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -18,9 +19,12 @@ P7Dump::P7Dump(std::filesystem::path const& fpath): m_file(fpath, std::ios::in |
 void P7Dump::run() {
   uint64_t header = 0;
   read(header);
-  if ((m_isBigEndian = (header == P7D_HDR_BE)) == false) {
-    if (header != P7D_HDR_LE) throw std::runtime_error("P7Dump: Invalid header");
-  }
+  if (header == P7D_HDR_BE.raw)
+    m_endian = std::endian::big;
+  else if (header == P7D_HDR_LE.raw)
+    m_endian = std::endian::little;
+  else
+    throw std::runtime_error("P7Dump: Invalid header");
 
   read_endian(m_processId);
   read_endian(m_createTime);
