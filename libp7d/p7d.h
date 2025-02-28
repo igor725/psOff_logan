@@ -77,7 +77,7 @@ class P7Dump {
 
   virtual ~P7Dump() = default;
 
-  void run();
+  virtual void run();
 
   virtual void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) = 0;
 

@@ -43,7 +43,7 @@ class P7DumpAnalyser: public P7Dump {
 
   void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) override final;
 
-  void run();
+  virtual void run() override final;
 
   private:
   nlohmann::json m_jsonInfo;

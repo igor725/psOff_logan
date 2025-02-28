@@ -7,8 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
+include_directories(${CMAKE_SOURCE_DIR})
+
+add_subdirectory(libp7d)
+
 add_executable(test
 	main.cpp
-	p7d.cpp
-	p7da.cpp
 )
+
+add_dependencies(test p7d)
+
+target_link_libraries(test PRIVATE p7d)
