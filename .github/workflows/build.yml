@@ -20,9 +20,9 @@ jobs:
 
       - name: Build
         run: |
-          echo "::add-matcher::tools/matchers/cmake.json"
-          echo "::add-matcher::tools/matchers/compilers.json"
-          cmake -DCMAKE_INSTALL_PREFIX=build/.install/ --build build/ --config=RelWithDebInfo -j4 --target install --
+          echo "::add-matcher::.github/matchers/cmake.json"
+          echo "::add-matcher::.github/matchers/compilers.json"
+          cmake -DCMAKE_INSTALL_PREFIX=build/.install/ --build build/ --config=RelWithDebInfo -j4 --target install
 
       - name: Build release artifacts
         uses: actions/upload-artifact@v4
