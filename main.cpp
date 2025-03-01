@@ -10,9 +10,13 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  auto an = createAnalyser(argv[1]);
-  an->run();
-  printf("%s", an->spit().c_str());
+  auto an = createFileAnalyser(argv[1]);
+  try {
+    an->run();
+    printf("%s", an->spit().c_str());
+  } catch (std::exception const& ex) {
+    fprintf(stderr, "P7Dump exception: %s\n", ex.what());
+  }
 
   while (true)
     std::this_thread::sleep_for(std::chrono::seconds(1));

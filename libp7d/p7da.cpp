@@ -1,8 +1,13 @@
 #include "p7da.h"
 
 #include <codecvt>
+#include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <ios>
 #include <locale>
 #include <memory>
+#include <stdexcept>
 #include <string_view>
 
 namespace {
@@ -165,7 +170,60 @@ EMSCRIPTEN_BINDINGS(EM_libp7d) {
       .function("spit", &P7DumpAnalyser::spit);
 }
 #else
-std::unique_ptr<P7Dump> createAnalyser(std::filesystem::path const& fpath) {
-  return std::make_unique<P7DumpAnalyser>(fpath);
+class P7DumpFileAnalyser: public P7DumpAnalyser {
+  public:
+  P7DumpFileAnalyser(std::filesystem::path const& fpath): P7DumpAnalyser(), m_file(fpath, std::ios::in | std::ios::binary) {
+    m_file.seekg(0, std::ios::end);
+    m_fileSize = m_file.tellg();
+    m_file.seekg(0, std::ios::beg);
+  };
+
+  size_t io_available() const override final {
+    auto cpos = m_file.tellg();
+    if (cpos > m_fileSize) return 0ull;
+    return m_fileSize - cpos;
+  }
+
+  void io_read(void* buffer, size_t nread) override final { m_file.read((char*)buffer, nread); }
+
+  void io_skip(size_t nbytes) override final { m_file.seekg(nbytes, std::ios::cur); }
+
+  private:
+  std::ios::pos_type   m_fileSize;
+  mutable std::fstream m_file;
+};
+
+std::unique_ptr<P7Dump> createFileAnalyser(std::filesystem::path const& fpath) {
+  return std::make_unique<P7DumpFileAnalyser>(fpath);
+}
+
+class P7DumpMemAnalyser: public P7DumpAnalyser {
+  public:
+  P7DumpMemAnalyser(void* memory, size_t size): P7DumpAnalyser(), m_memPtr(memory), m_memSize(size), m_memCurPos(0) {};
+
+  size_t io_available() const override final {
+    if (m_memCurPos > m_memSize) return 0ull;
+    return m_memSize - m_memCurPos;
+  }
+
+  void io_read(void* buffer, size_t nread) override final {
+    if ((m_memCurPos + nread) > m_memSize) throw std::runtime_error("Too big block read requested");
+    std::memcpy(buffer, (char*)m_memPtr + m_memCurPos, nread);
+    m_memCurPos += nread;
+  }
+
+  void io_skip(size_t nbytes) override final {
+    if ((m_memCurPos + nbytes) > m_memSize) throw std::runtime_error("Too many bytes skip requested");
+    m_memCurPos += nbytes;
+  }
+
+  private:
+  void*  m_memPtr;
+  size_t m_memSize;
+  size_t m_memCurPos;
+};
+
+std::unique_ptr<P7Dump> createMemAnalyser(void* memory, size_t size) {
+  return std::make_unique<P7DumpMemAnalyser>(memory, size);
 }
 #endif

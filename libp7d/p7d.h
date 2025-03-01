@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <bit>
 #include <cstdint>
-#include <filesystem>
-#include <fstream>
 #include <list>
 #include <string>
 #include <type_traits>
@@ -82,9 +80,15 @@ class P7Dump {
     std::list<p7string>                    formatted;
   };
 
-  P7Dump(std::filesystem::path const& fpath);
+  P7Dump() = default;
 
   virtual ~P7Dump() = default;
+
+  virtual size_t io_available() const = 0;
+
+  virtual void io_read(void* buffer, size_t nread) = 0;
+
+  virtual void io_skip(size_t nbytes) = 0;
 
   virtual void run();
 
@@ -93,12 +97,6 @@ class P7Dump {
   virtual std::string spit() const = 0;
 
   private:
-  template <typename T>
-  T& read(T& buf) {
-    m_file.read((char*)&buf, sizeof(buf));
-    return buf;
-  }
-
   template <typename T>
   struct AlignedBytes {
     alignas(T) unsigned char data[sizeof(T)];
@@ -114,8 +112,8 @@ class P7Dump {
   }
 
   template <typename T>
-  T& read_endian(T& buf) {
-    m_file.read((char*)&buf, sizeof(buf));
+  constexpr T& read_endian(T& buf) {
+    io_read(&buf, sizeof(buf));
     if ((sizeof(T) > 1) && (m_endian != std::endian::native)) buf = swap_endian(buf);
     return buf;
   }
@@ -124,7 +122,7 @@ class P7Dump {
   T zero_string(uint32_t& consumed) {
     T temp;
 
-    while (!m_file.eof()) {
+    while (io_available() > 0) {
       typename T::value_type ch;
       read_endian(ch);
       consumed += sizeof(ch);
@@ -147,15 +145,11 @@ class P7Dump {
       temp.push_back(ch);
     }
 
-    skip(bytesize);
+    io_skip(bytesize);
     return std::move(temp);
   }
 
-  void skip(uint32_t bytes) { m_file.seekg(bytes, std::ios::cur); }
-
   uint32_t processTraceSItem(StreamStorage& ss, StreamItem const& pi);
-
-  std::fstream m_file;
 
   std::unordered_map<uint8_t, StreamStorage> m_streams;
 

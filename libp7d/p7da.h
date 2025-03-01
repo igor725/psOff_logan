@@ -5,7 +5,6 @@
 #include "p7d.h"
 #include "third_party/json.hpp"
 
-#include <filesystem>
 #include <memory>
 
 class P7DumpAnalyser: public P7Dump {
@@ -41,15 +40,15 @@ class P7DumpAnalyser: public P7Dump {
   };
 
   public:
-  P7DumpAnalyser(std::filesystem::path const& fpath): P7Dump(fpath) {}
+  P7DumpAnalyser() = default;
 
   virtual ~P7DumpAnalyser() = default;
 
   void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) override final;
 
-  virtual std::string spit() const override final;
+  std::string spit() const override final;
 
-  virtual void run() override final;
+  void run() override final;
 
   private:
   nlohmann::json m_jsonInfo;
@@ -62,5 +61,6 @@ class P7DumpAnalyser: public P7Dump {
 #define EXPORT
 #endif
 
-EXPORT std::unique_ptr<P7Dump> createAnalyser(std::filesystem::path const& fpath);
+EXPORT std::unique_ptr<P7Dump> createFileAnalyser(std::filesystem::path const& fpath);
+EXPORT std::unique_ptr<P7Dump> createMemAnalyser(void* memory, size_t size);
 #endif

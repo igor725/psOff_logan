@@ -5,20 +5,14 @@
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
-#include <exception>
-#include <filesystem>
-#include <ios>
+#include <format>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-P7Dump::P7Dump(std::filesystem::path const& fpath): m_file(fpath, std::ios::in | std::ios::binary) {
-  m_file.exceptions(std::ios::badbit | std::ios::failbit);
-}
-
 void P7Dump::run() {
   uint64_t header = 0;
-  read(header);
+  io_read(&header, sizeof(header));
   if (header == P7D_HDR_BE.raw)
     m_endian = std::endian::big;
   else if (header == P7D_HDR_LE.raw)
@@ -32,37 +26,34 @@ void P7Dump::run() {
   m_hostName    = fixed_string<p7string>(0x200);
 
   StreamInfo si;
-  try {
-    while (m_file.peek() != EOF) {
-      read(si);
 
-      auto currStream = m_streams.find(si.channel);
-      if (currStream == m_streams.end()) currStream = m_streams.emplace(std::make_pair((uint8_t)si.channel, StreamStorage())).first;
+  while (io_available() >= sizeof(si)) {
+    read_endian(si);
 
-      while (si.size > sizeof(StreamInfo)) {
-        StreamItem item;
-        read(item);
-        if (item.size == 0) throw std::runtime_error("Unexpected StreamItem of 0 size!");
-        si.size -= item.size;
-        item.size -= 4;
+    auto currStream = m_streams.find(si.channel);
+    if (currStream == m_streams.end()) currStream = m_streams.emplace(std::make_pair((uint8_t)si.channel, StreamStorage())).first;
 
-        switch (item.type) {
-          case 0x00: { // STREAM_TRACE
-            auto actualRead = processTraceSItem(currStream->second, item);
-            if (item.size > actualRead) {
-              skip(item.size - actualRead);
-            }
-          } break;
+    while (si.size > sizeof(StreamInfo)) {
+      StreamItem item;
+      read_endian(item);
+      if (item.size == 0) throw std::runtime_error("P7Dump: Unexpected StreamItem of 0 size!");
+      si.size -= item.size;
+      item.size -= 4;
 
-          default: {
-            skip(item.size);
-            fprintf(stderr, "Stream %d ignored!\n", item.type);
-          } break;
-        }
+      switch (item.type) {
+        case 0x00: { // STREAM_TRACE
+          auto actualRead = processTraceSItem(currStream->second, item);
+          if (item.size > actualRead) {
+            io_skip(item.size - actualRead);
+          }
+        } break;
+
+        default: {
+          io_skip(item.size);
+          fprintf(stderr, "Stream %d ignored!\n", item.type);
+        } break;
       }
     }
-  } catch (std::exception const& ex) {
-    fprintf(stderr, "P7Dump exception: %s\n", ex.what());
   }
 }
 
@@ -100,32 +91,32 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
       if (si.size > cread) {
         if (numFmt) {
           auto argSizeByte = numFmt * sizeof(p7argument);
-          if (si.size < (cread + argSizeByte)) throw std::runtime_error("Corrupted file");
+          if (si.size < (cread + argSizeByte)) throw std::runtime_error("P7Dump: Corrupted file");
           line.formatInfos.reserve(numFmt);
           cread += argSizeByte;
 
           for (uint16_t i = 0; i < numFmt; ++i) {
             auto& data = line.formatInfos.emplace_back(std::make_pair(0, 0));
-            read(data.first), read(data.second);
+            read_endian(data.first), read_endian(data.second);
           }
         }
 
         if (cread < si.size) { // Read format string
           uint32_t consumed = 0;
           line.formatString = zero_string<p7string>(consumed);
-          if ((cread += consumed) > si.size) throw std::runtime_error("Corrupted file");
+          if ((cread += consumed) > si.size) throw std::runtime_error("P7Dump: Corrupted file");
         }
 
         if (cread < si.size) { // Read filename string
           uint32_t consumed = 0;
           line.fileName     = zero_string<std::string>(consumed);
-          if ((cread += consumed) > si.size) throw std::runtime_error("Corrupted file");
+          if ((cread += consumed) > si.size) throw std::runtime_error("P7Dump: Corrupted file");
         }
 
         if (cread < si.size) { // Read funcname string
           uint32_t consumed = 0;
           line.funcName     = zero_string<std::string>(consumed);
-          if ((cread += consumed) > si.size) throw std::runtime_error("Corrupted file");
+          if ((cread += consumed) > si.size) throw std::runtime_error("P7Dump: Corrupted file");
         }
       }
 
@@ -136,8 +127,8 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
       TraceLineData tsd;
 
       read_endian(tsd.id), cread += sizeof(tsd.id);
-      read(tsd.level), cread += sizeof(tsd.level);
-      read(tsd.cpu), cread += sizeof(tsd.cpu);
+      read_endian(tsd.level), cread += sizeof(tsd.level);
+      read_endian(tsd.cpu), cread += sizeof(tsd.cpu);
       read_endian(tsd.threadid), cread += sizeof(tsd.threadid);
       read_endian(tsd.sequence), cread += sizeof(tsd.sequence);
       read_endian(tsd.timer), cread += sizeof(tsd.timer);
@@ -196,7 +187,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             char achar;
             while (true) {
               cread += sizeof(achar);
-              if (read(achar) != '\0') {
+              if (read_endian(achar) != '\0') {
                 astr.push_back(achar);
                 continue;
               }
@@ -212,7 +203,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             char8_t u8char;
             while (true) {
               cread += sizeof(u8char);
-              if (read(u8char) != '\0') {
+              if (read_endian(u8char) != '\0') {
                 u8str.push_back(u8char);
                 continue;
               }
@@ -264,8 +255,8 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
     case 0x07: { // Module
       int16_t  mod_id;
       P7Module mod;
-      read(mod_id), cread += sizeof(mod_id);
-      read(mod.verbLevel), cread += sizeof(mod.verbLevel);
+      read_endian(mod_id), cread += sizeof(mod_id);
+      read_endian(mod.verbLevel), cread += sizeof(mod.verbLevel);
       mod.name = fixed_string<std::string>(54), cread += 54;
       stream.modules.emplace(std::make_pair(mod_id, std::move(mod)));
     } break;
