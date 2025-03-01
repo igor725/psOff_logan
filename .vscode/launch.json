@@ -15,7 +15,8 @@
 				// "C:\\Users\\igorg\\Downloads\\20250225-082726.000.p7d", // Child process, Unreal, exception
 				// "C:\\Users\\igorg\\Downloads\\20250124-153836.000.p7d", // Child process, Unreal, exception
 				// "C:\\Users\\igorg\\Downloads\\20241215-224229.000.p7d", // Main process, validation, shader shit etc
-				// "C:\\Users\\igorg\\Downloads\\20241215-224238.000.p7d", // Child process
+				// "C:\\Users\\igorg\\Downloads\\20241215-224238.000.p7d", // Child process, criware, wwise
+				// "--noblock"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceRoot}/build/.install/",

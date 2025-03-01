@@ -18,8 +18,10 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "P7Dump exception: %s\n", ex.what());
   }
 
-  while (true)
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+  if (argc == 2 || std::string_view(argv[2]) != "--noblock") {
+    while (true)
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
 
   return 0;
 }
