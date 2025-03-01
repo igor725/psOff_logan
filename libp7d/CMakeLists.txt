@@ -17,6 +17,6 @@ target_link_libraries(p7d PRIVATE embind)
 
 set_target_properties(p7d PROPERTIES LINK_FLAGS "-sMODULARIZE=1 -sEXPORT_ES6=1")
 else()
-	install(TARGETS p7d RUNTIME DESTINATION .)
+	install(TARGETS p7d RUNTIME DESTINATION bin)
 	install(FILES $<TARGET_PDB_FILE:p7d> DESTINATION debug OPTIONAL)
 endif()

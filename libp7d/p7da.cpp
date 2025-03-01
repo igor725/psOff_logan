@@ -1,3 +1,6 @@
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
+#define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
+
 #include "p7da.h"
 
 #include <codecvt>

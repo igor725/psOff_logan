@@ -96,6 +96,8 @@ class P7Dump {
 
   virtual std::string spit() const = 0;
 
+  static inline bool check_header(uint64_t header) { return P7D_HDR_BE.raw == header || P7D_HDR_LE.raw == header; }
+
   private:
   template <typename T>
   struct AlignedBytes {

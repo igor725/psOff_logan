@@ -1,7 +1,4 @@
 #pragma once
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-#define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
-
 #include "p7d.h"
 #include "third_party/json.hpp"
 

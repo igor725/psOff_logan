@@ -5,7 +5,7 @@
 			"name": "(Windows) Launch",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceRoot}/build/.install/psOff_logan.exe",
+			"program": "psOff_logan.exe",
 			"args": [
 				// "C:\\Users\\igorg\\Downloads\\20250227-191725.000.p7d", // Child process, Phyre Engine
 				// "C:\\Users\\igorg\\Downloads\\20250227-113851.000.p7d", // Main process, validation errors, shader gen errors
@@ -16,10 +16,11 @@
 				// "C:\\Users\\igorg\\Downloads\\20250124-153836.000.p7d", // Child process, Unreal, exception
 				// "C:\\Users\\igorg\\Downloads\\20241215-224229.000.p7d", // Main process, validation, shader shit etc
 				// "C:\\Users\\igorg\\Downloads\\20241215-224238.000.p7d", // Child process, criware, wwise
+				// "https://github.com/user-attachments/files/19029293/20250228-173928.000.p7d.zip", // Child process, zip archived
 				// "--noblock"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceRoot}/build/.install/",
+			"cwd": "${workspaceRoot}/build/.install/bin/",
 			"environment": [],
 			"console": "integratedTerminal",
 			"preLaunchTask": "CMake: install"
