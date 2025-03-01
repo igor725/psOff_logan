@@ -73,6 +73,6 @@ target_link_directories(psOff_logan PRIVATE ${THIRDPARTY_WORKDIR}/lib/)
 
 target_link_libraries(psOff_logan PRIVATE p7d winhttp zip)
 
-install(DIRECTORY "${THIRDPARTY_WORKDIR}/bin/" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
+install(DIRECTORY "${THIRDPARTY_WORKDIR}/bin/" DESTINATION bin)
 install(TARGETS psOff_logan COMPONENT psOff_logan DESTINATION bin)
 install(FILES $<TARGET_PDB_FILE:psOff_logan> DESTINATION debug OPTIONAL)
