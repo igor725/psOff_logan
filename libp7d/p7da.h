@@ -51,7 +51,6 @@ class P7DumpAnalyser: public P7Dump {
   nlohmann::json m_jsonInfo;
 };
 
-#ifndef __EMSCRIPTEN__
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
 #else
@@ -60,4 +59,3 @@ class P7DumpAnalyser: public P7Dump {
 
 EXPORT std::unique_ptr<P7Dump> createFileAnalyser(std::filesystem::path const& fpath);
 EXPORT std::unique_ptr<P7Dump> createMemAnalyser(void* memory, size_t size);
-#endif

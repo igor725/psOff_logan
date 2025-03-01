@@ -162,17 +162,6 @@ std::string P7DumpAnalyser::spit() const {
   return m_jsonInfo.dump(2, ' ', true);
 }
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <emscripten/bind.h>
-
-EMSCRIPTEN_BINDINGS(EM_libp7d) {
-  emscripten::class_<P7DumpAnalyser>("P7DumpAnalyser")
-      .constructor<std::filesystem::path const&>()
-      .function("run", &P7DumpAnalyser::run)
-      .function("spit", &P7DumpAnalyser::spit);
-}
-#else
 class P7DumpFileAnalyser: public P7DumpAnalyser {
   public:
   P7DumpFileAnalyser(std::filesystem::path const& fpath): P7DumpAnalyser(), m_file(fpath, std::ios::in | std::ios::binary) {
@@ -229,4 +218,3 @@ class P7DumpMemAnalyser: public P7DumpAnalyser {
 std::unique_ptr<P7Dump> createMemAnalyser(void* memory, size_t size) {
   return std::make_unique<P7DumpMemAnalyser>(memory, size);
 }
-#endif
