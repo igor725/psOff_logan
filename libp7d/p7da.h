@@ -12,9 +12,12 @@ class P7DumpAnalyser: public P7Dump {
     bool _isGpuPicked        : 1 = false;
 
     // Hints
-    bool _inputNotFoundHint : 1 = false;
-    bool _nvidiaHint        : 1 = false;
-    bool _hintTrophyKey     : 1 = false;
+    bool _inputNotFoundHint  : 1 = false;
+    bool _nvidiaHint         : 1 = false;
+    bool _hintTrophyKey      : 1 = false;
+    bool _hintAndnPatched    : 1 = false;
+    bool _hintInsertqPatched : 1 = false;
+    bool _hintExtrqPatched   : 1 = false;
 
     // Game engines
     bool _unityEngineDetected  : 1 = false;

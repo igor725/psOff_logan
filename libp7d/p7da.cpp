@@ -71,7 +71,7 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
       if (!_unrealEngineDetected && out.starts_with(u"Additional") && out.contains(u".uproject")) _unrealEngineDetected = true;
       if (!_unrealEngineDetected && out.contains(u"uecommandline.txt")) _unrealEngineDetected = true;
     } else {
-      if (mod.name.contains("pthread")) {
+      if (mod.name == "pthread") {
         if (out.starts_with(u"--> thread")) { // Thread run log
           if (!_unityEngineDetected) {
             if (out.contains(u"UnityWorker")) _unityEngineDetected = true;
@@ -86,14 +86,14 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
             if (out.contains(u"FMOD mixer")) _fmodSdkDetected = true;
           }
         }
-      } else if (mod.name.contains("libSceKernel")) {
+      } else if (mod.name == "libSceKernel") {
         if (!_monoSdkDetected) {
           if (out.contains(u".mono/config")) _monoSdkDetected = true;
         }
         if (!_unityEngineDetected) {
           if (out.contains(u"/unity default resources")) _unityEngineDetected = true;
         }
-      } else if (mod.name.contains("Kernel")) {
+      } else if (mod.name == "Kernel") {
         if (out.starts_with(u"psOff.")) {
           auto value = std::basic_string_view<char16_t>(out.c_str() + out.find_first_of('=') + 2);
           if (out.contains(u".isNeo = "))
@@ -103,16 +103,22 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
           else if (out.contains(u".app.title = "))
             m_jsonInfo["title_name"] = toUTF8(value);
         }
-      } else if (mod.name.contains("ExceptionHandler")) {
+      } else if (mod.name == "ExceptionHandler") {
         if (!_exceptionDetected && out.starts_with(u"Faulty instruction:")) _exceptionDetected = true;
-      } else if (mod.name.contains("libSceSysmodule")) {
+      } else if (mod.name == "libSceSysmodule") {
         if (out.starts_with(u"loading id = ")) {
           if (!_dialogSdkDetected && out.contains(u"Dialog")) _dialogSdkDetected = true;
         }
-      } else if (mod.name.contains("libSceNpTrophy")) {
+      } else if (mod.name == "libSceNpTrophy") {
         if (out == u"Missing trophy key!") _hintTrophyKey = true;
-      } else if (mod.name.contains(("elf_loader"))) {
+      } else if (mod.name == "elf_loader") {
         if (!_unityEngineDetected && out.contains(u"Il2CppUserAssemblies")) _unityEngineDetected = true;
+      } else if (mod.name == "patcher") {
+        if (out.starts_with(u"Applying ") && out.ends_with(u" patch")) {
+          if (!_hintInsertqPatched && out.contains(u"ANDN")) _hintAndnPatched = true;
+          if (!_hintInsertqPatched && out.contains(u"INSERTQ")) _hintInsertqPatched = true;
+          if (!_hintInsertqPatched && out.contains(u"EXTRQ")) _hintExtrqPatched = true;
+        }
       }
     }
   } else { // Handle main logs
@@ -149,6 +155,13 @@ void P7DumpAnalyser::run() {
       hints.push_back("One of your users has the input device set incorrectly, if you can't control the PS4 app, this could be the cause.");
     if (_nvidiaHint)
       hints.push_back("You are using an NVIDIA graphics card, these cards have many issues on our emulator that may not be present on AMD cards.");
+    if (_hintAndnPatched || _hintExtrqPatched || _hintInsertqPatched) {
+      std::string unsupported;
+      if (_hintAndnPatched) unsupported += "ANDN, ";
+      if (_hintExtrqPatched) unsupported += "EXTRQ, ";
+      if (_hintInsertqPatched) unsupported += "INSERTQ, ";
+      hints.push_back(std::format("Your CPU does not support some instructions ({}) and they have been patched", unsupported));
+    }
     if (_vkValidation) labels.push_back("graphics");
     if (_shaderGenTodo) labels.push_back("shader-gen");
   }
