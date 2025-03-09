@@ -1,4 +1,7 @@
 #pragma once
+#define JSON_NO_IO
+#define JSON_HAS_CPP_20
+
 #include "p7d.h"
 #include "third_party/json.hpp"
 
