@@ -55,8 +55,12 @@ enum LogAnExitCodes : int32_t {
 
 static void runAnalyser(std::unique_ptr<P7Dump> const& analyser) {
   try {
-    analyser->run();
-    printf("%s", analyser->spit().c_str());
+    if (analyser->run()) {
+      printf("%s", analyser->spit().c_str());
+      return;
+    }
+
+    printf("analyser->render() call finished with error!\n");
   } catch (std::exception const& ex) {
     fprintf(stderr, "P7Dump exception: %s\n", ex.what());
   }

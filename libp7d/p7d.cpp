@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-void P7Dump::run() {
+bool P7Dump::run() {
   uint64_t header = 0;
   io_read(&header, sizeof(header));
   if (header == P7D_HDR_BE.raw)
@@ -43,6 +43,8 @@ void P7Dump::run() {
       switch (item.type) {
         case 0x00: { // STREAM_TRACE
           auto actualRead = processTraceSItem(currStream->second, item);
+          if (actualRead == P7D_RENDER_FAIL) return false;
+
           if (item.size > actualRead) {
             io_skip(item.size - actualRead);
           }
@@ -55,6 +57,8 @@ void P7Dump::run() {
       }
     }
   }
+
+  return true;
 }
 
 template <typename T>
@@ -141,7 +145,9 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
 
       tsd.modid = strinfo->second.moduleId;
       if (strinfo->second.formatInfos.empty()) {
-        render(stream, tsd, strinfo->second.formatString);
+        if (!render(stream, tsd, strinfo->second.formatString)) {
+          return P7D_RENDER_FAIL;
+        }
         break;
       }
 
@@ -240,7 +246,9 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
       p7string outstr;
       outstr.resize(len + 1);
       vswprintf((wchar_t*)outstr.data(), outstr.size(), (const wchar_t*)strinfo->second.formatString.c_str(), (va_list)improvised_stack.data());
-      render(stream, tsd, outstr);
+      if (!render(stream, tsd, outstr)) {
+        return P7D_RENDER_FAIL;
+      }
     } break;
 
     case 0x03: { // Verb packet? Wtf is this, dunno

@@ -14,8 +14,9 @@ union P7Header {
   uint64_t raw;
 };
 
-constexpr P7Header P7D_HDR_LE = {.data = {0xa6, 0x2c, 0xf3, 0xec, 0x71, 0xac, 0xd2, 0x45}};
-constexpr P7Header P7D_HDR_BE = {.data = {0x45, 0xd2, 0xac, 0x71, 0xec, 0xf3, 0x2c, 0xa6}};
+constexpr P7Header P7D_HDR_LE      = {.data = {0xa6, 0x2c, 0xf3, 0xec, 0x71, 0xac, 0xd2, 0x45}};
+constexpr P7Header P7D_HDR_BE      = {.data = {0x45, 0xd2, 0xac, 0x71, 0xec, 0xf3, 0x2c, 0xa6}};
+constexpr uint32_t P7D_RENDER_FAIL = (uint32_t)-1;
 
 class P7Dump {
   public:
@@ -90,9 +91,9 @@ class P7Dump {
 
   virtual void io_skip(size_t nbytes) = 0;
 
-  virtual void run();
+  virtual bool run();
 
-  virtual void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) = 0;
+  virtual bool render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) = 0;
 
   virtual std::string spit() const = 0;
 

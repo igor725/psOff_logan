@@ -47,11 +47,11 @@ class P7DumpAnalyser: public P7Dump {
 
   virtual ~P7DumpAnalyser() = default;
 
-  void render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) override final;
+  bool render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) override final;
 
   std::string spit() const override final;
 
-  void run() override final;
+  bool run() override final;
 
   private:
   nlohmann::json m_jsonInfo;

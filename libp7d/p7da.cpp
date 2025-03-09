@@ -28,7 +28,7 @@ auto toUTF8(std::basic_string_view<char16_t> source) {
 }
 } // namespace
 
-void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) {
+bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7string const& out) {
   if (!_processTypeGuessed) {
     _processTypeGuessed = true;
     if ((_isChildprocess = (m_processName == u"psOff_tunnel.exe")) == true) { // Prepare child process things
@@ -131,44 +131,50 @@ void P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
     if (!_shaderGenTodo && (mod.name == "sb2spirv") && (out.contains(u"todo") || out.contains(u"Instruction missing"))) _shaderGenTodo = true;
     if (!_vkValidation && (mod.name == "videoout") && out.contains(u"Validation Error: ")) _vkValidation = true;
   }
+
+  return true;
 }
 
-void P7DumpAnalyser::run() {
-  P7Dump::run();
+bool P7DumpAnalyser::run() {
+  if (P7Dump::run()) {
+    auto& labels = m_jsonInfo["labels"];
+    auto& hints  = m_jsonInfo["hints"];
 
-  auto& labels = m_jsonInfo["labels"];
-  auto& hints  = m_jsonInfo["hints"];
-
-  if (_isChildprocess) {
-    if (_unityEngineDetected) labels.push_back("engine-unity");
-    if (_unrealEngineDetected) labels.push_back("engine-unreal");
-    if (_cryEngineDetected) labels.push_back("engine-cry");
-    if (_phyreEngineDetected) labels.push_back("engine-phyre");
-    if (_gmakerEngineDetected) labels.push_back("engine-gamemaker");
-    if (_exceptionDetected) labels.push_back("exception");
-    if (_fmodSdkDetected) labels.push_back("sdk-fmod");
-    if (_monoSdkDetected) labels.push_back("sdk-mono");
-    if (_criSdkDetected) labels.push_back("sdk-criware");
-    if (_wwiseSdkDetected) labels.push_back("sdk-wwise");
-  } else {
-    if (_inputNotFoundHint)
-      hints.push_back("One of your users has the input device set incorrectly, if you can't control the PS4 app, this could be the cause.");
-    if (_nvidiaHint)
-      hints.push_back("You are using an NVIDIA graphics card, these cards have many issues on our emulator that may not be present on AMD cards.");
-    if (_hintAndnPatched || _hintExtrqPatched || _hintInsertqPatched) {
-      std::string unsupported;
-      if (_hintAndnPatched) unsupported += "ANDN, ";
-      if (_hintExtrqPatched) unsupported += "EXTRQ, ";
-      if (_hintInsertqPatched) unsupported += "INSERTQ, ";
-      hints.push_back(std::format("Your CPU does not support some instructions ({}) and they have been patched", unsupported));
+    if (_isChildprocess) {
+      if (_unityEngineDetected) labels.push_back("engine-unity");
+      if (_unrealEngineDetected) labels.push_back("engine-unreal");
+      if (_cryEngineDetected) labels.push_back("engine-cry");
+      if (_phyreEngineDetected) labels.push_back("engine-phyre");
+      if (_gmakerEngineDetected) labels.push_back("engine-gamemaker");
+      if (_exceptionDetected) labels.push_back("exception");
+      if (_fmodSdkDetected) labels.push_back("sdk-fmod");
+      if (_monoSdkDetected) labels.push_back("sdk-mono");
+      if (_criSdkDetected) labels.push_back("sdk-criware");
+      if (_wwiseSdkDetected) labels.push_back("sdk-wwise");
+    } else {
+      if (_inputNotFoundHint)
+        hints.push_back("One of your users has the input device set incorrectly, if you can't control the PS4 app, this could be the cause.");
+      if (_nvidiaHint)
+        hints.push_back("You are using an NVIDIA graphics card, these cards have many issues on our emulator that may not be present on AMD cards.");
+      if (_hintAndnPatched || _hintExtrqPatched || _hintInsertqPatched) {
+        std::string unsupported;
+        if (_hintAndnPatched) unsupported += "ANDN, ";
+        if (_hintExtrqPatched) unsupported += "EXTRQ, ";
+        if (_hintInsertqPatched) unsupported += "INSERTQ, ";
+        hints.push_back(std::format("Your CPU does not support some instructions ({}) and they have been patched", unsupported));
+      }
+      if (_vkValidation) labels.push_back("graphics");
+      if (_shaderGenTodo) labels.push_back("shader-gen");
     }
-    if (_vkValidation) labels.push_back("graphics");
-    if (_shaderGenTodo) labels.push_back("shader-gen");
+
+    if (_hintTrophyKey)
+      hints.push_back("You don't have the trophy key installed, this can cause problems in games, also you won't be able to see the list of trophies you have "
+                      "received. To solve this problem, check #faq channel in on Discord Server.");
+
+    return true;
   }
 
-  if (_hintTrophyKey)
-    hints.push_back("You don't have the trophy key installed, this can cause problems in games, also you won't be able to see the list of trophies you have "
-                    "received. To solve this problem, check #faq channel in on Discord Server.");
+  return false;
 }
 
 std::string P7DumpAnalyser::spit() const {
