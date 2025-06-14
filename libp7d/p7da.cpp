@@ -39,6 +39,10 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
               nlohmann::json::array(),
           },
           {
+              "firmware",
+              nlohmann::json::array(),
+          },
+          {
               "hints",
               nlohmann::json::array(),
           },
@@ -70,6 +74,8 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
       if (!_gmakerEngineDetected && out.contains(u"YoYo Games PS4 Runner")) _gmakerEngineDetected = true;
       if (!_unrealEngineDetected && out.starts_with(u"Additional") && out.contains(u".uproject")) _unrealEngineDetected = true;
       if (!_unrealEngineDetected && out.contains(u"uecommandline.txt")) _unrealEngineDetected = true;
+      if (!_naughtyEngineDetected && out.contains(u"ND File Server")) _naughtyEngineDetected = true;
+      if (!_naughtyEngineDetected && out.contains(u"----- Switching world: from")) _naughtyEngineDetected = true;
     } else {
       if (mod.name == "pthread") {
         if (out.starts_with(u"--> thread")) { // Thread run log
@@ -84,6 +90,9 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
           }
           if (!_fmodSdkDetected) {
             if (out.contains(u"FMOD mixer")) _fmodSdkDetected = true;
+          }
+          if (!_havokSdkDetected) {
+            if (out.contains(u"HavokWorkerThread")) _havokSdkDetected = true;
           }
         }
       } else if (mod.name == "libSceKernel") {
@@ -113,12 +122,23 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
         if (out == u"Missing trophy key!") _hintTrophyKey = true;
       } else if (mod.name == "elf_loader") {
         if (!_unityEngineDetected && out.contains(u"Il2CppUserAssemblies")) _unityEngineDetected = true;
+        if (out.starts_with(u"load library[") && out.ends_with(u".sprx")) {
+          auto start = out.find_last_of(u"\\/");
+          if (start == p7string::npos) {
+            start = 0;
+          } else {
+            start += 1;
+          }
+          m_jsonInfo["firmware"].push_back(toUTF8(std::basic_string_view<char16_t>(out.c_str()).substr(start)));
+        }
       } else if (mod.name == "patcher") {
         if (out.starts_with(u"Applying ") && out.ends_with(u" patch")) {
           if (!_hintInsertqPatched && out.contains(u"ANDN")) _hintAndnPatched = true;
           if (!_hintInsertqPatched && out.contains(u"INSERTQ")) _hintInsertqPatched = true;
           if (!_hintInsertqPatched && out.contains(u"EXTRQ")) _hintExtrqPatched = true;
         }
+      } else if (!_hintAjmFound && mod.name == "Ajm::Instance") {
+        _hintAjmFound = true;
       }
     }
   } else { // Handle main logs
@@ -146,10 +166,12 @@ bool P7DumpAnalyser::run() {
       if (_cryEngineDetected) labels.push_back("engine-cry");
       if (_phyreEngineDetected) labels.push_back("engine-phyre");
       if (_gmakerEngineDetected) labels.push_back("engine-gamemaker");
+      if (_naughtyEngineDetected) labels.push_back("engine-naughty");
       if (_exceptionDetected) labels.push_back("exception");
       if (_fmodSdkDetected) labels.push_back("sdk-fmod");
       if (_monoSdkDetected) labels.push_back("sdk-mono");
       if (_criSdkDetected) labels.push_back("sdk-criware");
+      if (_havokSdkDetected) labels.push_back("sdk-havok");
       if (_wwiseSdkDetected) labels.push_back("sdk-wwise");
     } else {
       if (_inputNotFoundHint)
@@ -163,6 +185,7 @@ bool P7DumpAnalyser::run() {
         if (_hintInsertqPatched) unsupported += "INSERTQ, ";
         hints.push_back(std::format("Your CPU does not support some instructions ({}) and they have been patched", unsupported));
       }
+      if (_hintAjmFound) hints.push_back("This game uses hardware audio encoding/decoding");
       if (_vkValidation) labels.push_back("graphics");
       if (_shaderGenTodo) labels.push_back("shader-gen");
     }

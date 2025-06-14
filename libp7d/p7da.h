@@ -2,9 +2,10 @@
 #define JSON_NO_IO
 #define JSON_HAS_CPP_20
 
-#include "p7d.h"
+#include "libp7d/p7d.h"
 #include "third_party/json.hpp"
 
+#include <filesystem>
 #include <memory>
 
 class P7DumpAnalyser: public P7Dump {
@@ -21,18 +22,21 @@ class P7DumpAnalyser: public P7Dump {
     bool _hintAndnPatched    : 1 = false;
     bool _hintInsertqPatched : 1 = false;
     bool _hintExtrqPatched   : 1 = false;
+    bool _hintAjmFound       : 1 = false;
 
     // Game engines
-    bool _unityEngineDetected  : 1 = false;
-    bool _cryEngineDetected    : 1 = false;
-    bool _unrealEngineDetected : 1 = false;
-    bool _phyreEngineDetected  : 1 = false;
-    bool _gmakerEngineDetected : 1 = false;
+    bool _unityEngineDetected   : 1 = false;
+    bool _cryEngineDetected     : 1 = false;
+    bool _unrealEngineDetected  : 1 = false;
+    bool _phyreEngineDetected   : 1 = false;
+    bool _gmakerEngineDetected  : 1 = false;
+    bool _naughtyEngineDetected : 1 = false;
 
     // SDKs
     bool _fmodSdkDetected   : 1 = false;
     bool _monoSdkDetected   : 1 = false;
     bool _criSdkDetected    : 1 = false;
+    bool _havokSdkDetected  : 1 = false;
     bool _wwiseSdkDetected  : 1 = false;
     bool _dialogSdkDetected : 1 = false;
 

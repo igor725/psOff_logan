@@ -246,6 +246,8 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
       p7string outstr;
       outstr.resize(len + 1);
       vswprintf((wchar_t*)outstr.data(), outstr.size(), (const wchar_t*)strinfo->second.formatString.c_str(), (va_list)improvised_stack.data());
+      while (outstr.back() == u'\00')
+        outstr.pop_back();
       if (!render(stream, tsd, outstr)) {
         return P7D_RENDER_FAIL;
       }
