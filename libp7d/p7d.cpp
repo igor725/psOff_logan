@@ -5,7 +5,6 @@
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
-#include <format>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -236,7 +235,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             insert_to_stack<char32_t*>(improvised_stack, std::any_cast<std::u32string&>(improvised_storage.emplace_back(std::move(u32str))).data());
           } break;
           default: {
-            throw std::runtime_error(std::format("Unknown argument: {}!", si.subtype));
+            throw std::runtime_error(std::string("Unknown argument: ") + std::to_string(si.subtype));
           } break;
         }
       }

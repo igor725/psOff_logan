@@ -188,11 +188,11 @@ bool P7DumpAnalyser::run() {
       if (_nvidiaHint)
         hints.push_back("You are using an NVIDIA graphics card, these cards have many issues on our emulator that may not be present on AMD cards.");
       if (_hintAndnPatched || _hintExtrqPatched || _hintInsertqPatched) {
-        std::string unsupported;
+        std::string unsupported = "Your CPU does not support some instructions (";
         if (_hintAndnPatched) unsupported += "ANDN, ";
         if (_hintExtrqPatched) unsupported += "EXTRQ, ";
         if (_hintInsertqPatched) unsupported += "INSERTQ, ";
-        hints.push_back(std::format("Your CPU does not support some instructions ({}) and they have been patched", unsupported));
+        hints.push_back(unsupported + ") and they have been patched");
       }
       if (_hintAjmFound) hints.push_back("This game uses hardware audio encoding/decoding");
       if (_vkValidation) labels.push_back("graphics");
