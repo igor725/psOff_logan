@@ -5,5 +5,7 @@
 	"cmake.configureSettings": {
 		"CMAKE_INSTALL_PREFIX": "${workspaceFolder}/build/.install",
 		"CMAKE_EXPORT_COMPILE_COMMANDS": 1
-	}
+	},
+	"cmake.configureOnEdit": false,
+	"cmake.configureOnOpen": false
 }

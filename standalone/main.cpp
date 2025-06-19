@@ -1,10 +1,6 @@
-#include "zipconf.h"
-
-#include <iostream>
-#define NOMINMAX
-
 #include "libp7d/p7d.h"
 #include "libp7d/p7da.h"
+#include "zipconf.h"
 
 #include <Windows.h>
 #include <algorithm>
@@ -15,6 +11,7 @@
 #include <cstring>
 #include <filesystem>
 #include <format>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <string>

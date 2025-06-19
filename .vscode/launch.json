@@ -18,6 +18,7 @@
 				// "C:\\Users\\igorg\\Downloads\\20241215-224238.000.p7d", // Child process, criware, wwise
 				// "https://github.com/user-attachments/files/19029293/20250228-173928.000.p7d.zip", // Child process, zip archived
 				// "--noblock"
+				"https://github.com/user-attachments/files/20740982/20250614-203630.000.p7d.zip"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceRoot}/build/.install/bin/",
