@@ -77,6 +77,11 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
       if (!_naughtyEngineDetected && out.contains(u"ND File Server")) _naughtyEngineDetected = true;
       if (!_naughtyEngineDetected && out.contains(u"----- Switching world: from")) _naughtyEngineDetected = true;
     } else {
+      if (out.starts_with(u"todo ")) {
+        if (!_netStuffDetected && out.starts_with(u"todo sceNp")) _netStuffDetected = true;
+        return true;
+      }
+
       if (mod.name == "pthread") {
         if (out.starts_with(u"--> thread")) { // Thread run log
           if (!_unityEngineDetected) {
@@ -148,8 +153,12 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
       m_jsonInfo["user-gpu"] = toUTF8(std::basic_string_view<char16_t>(out.c_str() + out.find_first_of(u':') + 1));
     }
     if (!_inputNotFoundHint && out.contains(u"No pad with specified name was found")) _inputNotFoundHint = true;
-    if (!_shaderGenTodo && (mod.name == "sb2spirv") && (out.contains(u"todo") || out.contains(u"Instruction missing"))) _shaderGenTodo = true;
-    if (!_vkValidation && (mod.name == "videoout") && out.contains(u"Validation Error: ")) _vkValidation = true;
+    if (mod.name == "sb2spirv") {
+      if (!_shaderGenTodo && (out.contains(u"todo") || out.contains(u"Instruction missing"))) _shaderGenTodo = true;
+    } else if (mod.name == "videoout") {
+      if (!_vkValidation && out.contains(u"Validation Error: ")) _vkValidation = true;
+      if (!_vkNoDevices && out == u"Failed to find any suitable Vulkan device") _vkNoDevices = true;
+    }
   }
 
   return true;
@@ -188,6 +197,10 @@ bool P7DumpAnalyser::run() {
       if (_hintAjmFound) hints.push_back("This game uses hardware audio encoding/decoding");
       if (_vkValidation) labels.push_back("graphics");
       if (_shaderGenTodo) labels.push_back("shader-gen");
+      if (_vkNoDevices) {
+        hints.push_back("Your GPU is not supported at the moment");
+        labels.push_back("badgpu");
+      }
     }
 
     if (_hintTrophyKey)

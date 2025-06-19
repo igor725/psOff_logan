@@ -35,7 +35,7 @@ if(CMAKE_JS_VERSION)
 	string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
 	target_include_directories(psOff_logan PRIVATE ${NODE_ADDON_API_DIR})
 
-	add_compile_definitions(-DNAPI_VERSION=4)
+	add_compile_definitions(-DNAPI_VERSION=8)
 	set_target_properties(psOff_logan PROPERTIES PREFIX "" SUFFIX ".node")
 	target_include_directories(psOff_logan PRIVATE ${CMAKE_JS_INC})
 	target_link_libraries(psOff_logan PRIVATE ${CMAKE_JS_LIB})

@@ -1,6 +1,7 @@
 {
 	"name": "psoff_logan",
 	"type": "module",
+	"main": "index.js",
 	"scripts": {
 		"install": "cmake-js compile"
 	},
@@ -9,11 +10,14 @@
 	},
 	"binary": {
 		"napi_versions": [
-			7
+			8
 		]
 	},
 	"dependencies": {
 		"bindings": "^1.5.0",
-		"node-addon-api": "^8.4.0"
+		"discord.js": "^14.20.0",
+		"dotenv": "^16.5.0",
+		"node-addon-api": "^8.4.0",
+		"unzipit": "^1.4.3"
 	}
 }
