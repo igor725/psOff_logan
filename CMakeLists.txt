@@ -105,4 +105,6 @@ target_link_libraries(psOff_logan PRIVATE p7d)
 
 install(DIRECTORY "${THIRDPARTY_WORKDIR}/bin/" DESTINATION bin)
 install(TARGETS psOff_logan COMPONENT psOff_logan DESTINATION bin)
-install(FILES $<TARGET_PDB_FILE:psOff_logan> DESTINATION debug OPTIONAL)
+if(WIN32)
+	install(FILES $<TARGET_PDB_FILE:psOff_logan> DESTINATION debug OPTIONAL)
+endif()
