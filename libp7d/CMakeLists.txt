@@ -6,4 +6,6 @@ add_library(p7d SHARED
 )
 
 install(TARGETS p7d RUNTIME DESTINATION bin)
-install(FILES $<TARGET_PDB_FILE:p7d> DESTINATION debug OPTIONAL)
+if(WIN32)
+	install(FILES $<TARGET_PDB_FILE:p7d> DESTINATION debug OPTIONAL)
+endif()
