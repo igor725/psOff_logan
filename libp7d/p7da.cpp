@@ -46,6 +46,7 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
               "hints",
               nlohmann::json::array(),
           },
+          {"emu_neo", false},
           {"title_name", "Unnamed"},
           {"title_id", "CUSA00000"},
           {"title_neo", false},
@@ -110,7 +111,10 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
       } else if (mod.name == "Kernel") {
         if (out.starts_with(u"psOff.")) {
           auto value = std::basic_string_view<char16_t>(out.c_str() + out.find_first_of('=') + 2);
+
           if (out.contains(u".isNeo = "))
+            m_jsonInfo["emu_neo"] = value == u"1";
+          else if (out.contains(u".app.neoSupport = "))
             m_jsonInfo["title_neo"] = value == u"1";
           else if (out.contains(u".app.id = "))
             m_jsonInfo["title_id"] = toUTF8(value);
