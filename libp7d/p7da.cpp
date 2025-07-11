@@ -73,6 +73,7 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
   if (_isChildprocess) { // Handle child logs
     if (stream.info.name.contains(u"tty")) {
       if (!_gmakerEngineDetected && out.contains(u"YoYo Games PS4 Runner")) _gmakerEngineDetected = true;
+      if (!_irrlichtEngineDetected && out.contains(u"Irrlicht Engine")) _irrlichtEngineDetected = true;
       if (!_unrealEngineDetected && out.starts_with(u"Additional") && out.contains(u".uproject")) _unrealEngineDetected = true;
       if (!_unrealEngineDetected && out.contains(u"uecommandline.txt")) _unrealEngineDetected = true;
       if (!_naughtyEngineDetected && out.contains(u"ND File Server")) _naughtyEngineDetected = true;
@@ -180,6 +181,7 @@ bool P7DumpAnalyser::run() {
       if (_phyreEngineDetected) labels.push_back("engine-phyre");
       if (_gmakerEngineDetected) labels.push_back("engine-gamemaker");
       if (_naughtyEngineDetected) labels.push_back("engine-naughty");
+      if (_irrlichtEngineDetected) labels.push_back("engine-irrlicht");
       if (_exceptionDetected) labels.push_back("exception");
       if (_fmodSdkDetected) labels.push_back("sdk-fmod");
       if (_monoSdkDetected) labels.push_back("sdk-mono");

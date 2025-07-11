@@ -25,12 +25,13 @@ class P7DumpAnalyser: public P7Dump {
     bool _hintAjmFound       : 1 = false;
 
     // Game engines
-    bool _unityEngineDetected   : 1 = false;
-    bool _cryEngineDetected     : 1 = false;
-    bool _unrealEngineDetected  : 1 = false;
-    bool _phyreEngineDetected   : 1 = false;
-    bool _gmakerEngineDetected  : 1 = false;
-    bool _naughtyEngineDetected : 1 = false;
+    bool _unityEngineDetected    : 1 = false;
+    bool _cryEngineDetected      : 1 = false;
+    bool _unrealEngineDetected   : 1 = false;
+    bool _phyreEngineDetected    : 1 = false;
+    bool _gmakerEngineDetected   : 1 = false;
+    bool _naughtyEngineDetected  : 1 = false;
+    bool _irrlichtEngineDetected : 1 = false;
 
     // SDKs
     bool _fmodSdkDetected   : 1 = false;
