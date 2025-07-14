@@ -89,8 +89,13 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
           if (!_unityEngineDetected) {
             if (out.contains(u"UnityWorker")) _unityEngineDetected = true;
             if (!_unityEngineDetected && out.contains(u"UnityGfx")) _unityEngineDetected = true;
-            if (!_criSdkDetected && (out.contains(u"CriThread") || out.contains(u"CRI FS"))) _criSdkDetected = true;
-            if (!_wwiseSdkDetected && out.contains(u"Wwise")) _wwiseSdkDetected = true;
+          }
+          if (!_criSdkDetected) {
+            if (out.contains(u"CriThread") || out.contains(u"CRI FS")) _criSdkDetected = true;
+          }
+          if (!_wwiseSdkDetected) {
+            if (out.contains(u"Wwise")) _wwiseSdkDetected = true;
+            if (!_wwiseSdkDetected && out.contains(u"AK::LibAudioOut")) _wwiseSdkDetected = true;
           }
           if (!_phyreEngineDetected) {
             if (out.contains(u"PhyreEngine")) _phyreEngineDetected = true;
