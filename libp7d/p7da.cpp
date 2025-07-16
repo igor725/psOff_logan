@@ -47,6 +47,10 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
               nlohmann::json::array(),
           },
           {"emu_neo", false},
+          {"emu_skipAjm", false},
+          {"emu_skipMovies", false},
+          {"emu_networking", false},
+          {"emu_noElfCheck", false},
           {"title_name", "Unnamed"},
           {"title_id", "CUSA00000"},
           {"title_neo", false},
@@ -120,6 +124,14 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
 
           if (out.contains(u".isNeo = "))
             m_jsonInfo["emu_neo"] = value == u"1";
+          else if (out.contains(u".skipAJM = "))
+            m_jsonInfo["emu_skipAjm"] = value == u"1";
+          else if (out.contains(u".skipMovies = "))
+            m_jsonInfo["emu_skipMovies"] = value == u"1";
+          else if (out.contains(u".networking = "))
+            m_jsonInfo["emu_networking"] = value == u"1";
+          else if (out.contains(u".noElfCheck = "))
+            m_jsonInfo["emu_noElfCheck"] = value == u"1";
           else if (out.contains(u".app.neoSupport = "))
             m_jsonInfo["title_neo"] = value == u"1";
           else if (out.contains(u".app.id = "))
