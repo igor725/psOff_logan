@@ -1,13 +1,22 @@
 #include "p7d.h"
 
+#include "p7exceptions.h"
+
 #include <any>
 #include <bit>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
-#include <stdexcept>
+#include <exception>
+#include <limits>
 #include <string>
+#include <type_traits>
 #include <vector>
+
+bool P7Dump::validate() {
+  return !m_streams.empty() && !m_processName.empty() && !m_hostName.empty() && m_processId != std::numeric_limits<uint32_t>::max() &&
+         m_createTime != std::numeric_limits<uint64_t>::max();
+}
 
 bool P7Dump::run() {
   uint64_t header = 0;
@@ -17,7 +26,7 @@ bool P7Dump::run() {
   else if (header == P7D_HDR_LE.raw)
     m_endian = std::endian::little;
   else
-    throw std::runtime_error("P7Dump: Invalid header");
+    throw P7DumpInvalidHeaderException();
 
   read_endian(m_processId);
   read_endian(m_createTime);
@@ -26,38 +35,51 @@ bool P7Dump::run() {
 
   StreamInfo si;
 
-  while (io_available() >= sizeof(si)) {
-    read_endian(si);
+  try {
+    while (io_available() >= sizeof(si)) {
+      read_endian(si);
 
-    auto currStream = m_streams.find(si.channel);
-    if (currStream == m_streams.end()) currStream = m_streams.emplace(std::make_pair((uint8_t)si.channel, StreamStorage())).first;
+      auto currStream = m_streams.find(si.channel);
+      if (currStream == m_streams.end()) currStream = m_streams.emplace(std::make_pair((uint8_t)si.channel, StreamStorage())).first;
 
-    while (si.size > sizeof(StreamInfo)) {
-      StreamItem item;
-      read_endian(item);
-      if (item.size == 0) throw std::runtime_error("P7Dump: Unexpected StreamItem of 0 size!");
-      si.size -= item.size;
-      item.size -= 4;
+      while (si.size > sizeof(StreamInfo)) {
+        StreamItem item;
+        read_endian(item);
+        if (item.size == 0) throw P7DumpBrokenStreamItemException(item.size, item.subtype, item.type);
+        si.size -= item.size;
+        item.size -= 4;
 
-      switch (item.type) {
-        case 0x00: { // STREAM_TRACE
-          auto actualRead = processTraceSItem(currStream->second, item);
-          if (actualRead == P7D_RENDER_FAIL) return false;
+        switch (item.type) {
+          case 0x00: { // STREAM_TRACE
+            auto actualRead = processTraceSItem(currStream->second, item);
+            if (actualRead == P7D_RENDER_FAIL) return false;
 
-          if (item.size > actualRead) {
-            io_skip(item.size - actualRead);
-          }
-        } break;
+            if (item.size > actualRead) {
+              io_skip(item.size - actualRead);
+            }
+          } break;
 
-        default: {
-          io_skip(item.size);
-          fprintf(stderr, "Stream %d ignored!\n", item.type);
-        } break;
+          default: {
+            io_skip(item.size);
+            fprintf(stderr, "Stream %d ignored!\n", item.type);
+          } break;
+        }
       }
     }
-  }
 
-  return true;
+    return true;
+  } catch (std::exception const& ex) {
+    auto const hash = typeid(ex).hash_code();
+
+    if (hash == typeid(P7DumpNotEnoughBufferSpaceException).hash_code()) {
+      if (validate()) { // We gonna finish rendering anyways, even if we got exception at the end, but we got valid data
+        fprintf(stderr, "%s\n", ex.what());
+        return true;
+      }
+    }
+
+    throw ex; // Rethrow any unhandled exception
+  }
 }
 
 template <typename T>
@@ -94,7 +116,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
       if (si.size > cread) {
         if (numFmt) {
           auto argSizeByte = numFmt * sizeof(p7argument);
-          if (si.size < (cread + argSizeByte)) throw std::runtime_error("P7Dump: Corrupted file");
+          if (si.size < (cread + argSizeByte)) throw P7DumpCorruptedItemException("Arguments");
           line.formatInfos.reserve(numFmt);
           cread += argSizeByte;
 
@@ -107,19 +129,19 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
         if (cread < si.size) { // Read format string
           uint32_t consumed = 0;
           line.formatString = zero_string<p7string>(consumed);
-          if ((cread += consumed) > si.size) throw std::runtime_error("P7Dump: Corrupted file");
+          if ((cread += consumed) > si.size) throw P7DumpCorruptedItemException("Format String");
         }
 
         if (cread < si.size) { // Read filename string
           uint32_t consumed = 0;
           line.fileName     = zero_string<std::string>(consumed);
-          if ((cread += consumed) > si.size) throw std::runtime_error("P7Dump: Corrupted file");
+          if ((cread += consumed) > si.size) throw P7DumpCorruptedItemException("File Name");
         }
 
         if (cread < si.size) { // Read funcname string
           uint32_t consumed = 0;
           line.funcName     = zero_string<std::string>(consumed);
-          if ((cread += consumed) > si.size) throw std::runtime_error("P7Dump: Corrupted file");
+          if ((cread += consumed) > si.size) throw P7DumpCorruptedItemException("Function Name");
         }
       }
 
@@ -235,7 +257,7 @@ uint32_t P7Dump::processTraceSItem(StreamStorage& stream, StreamItem const& si) 
             insert_to_stack<char32_t*>(improvised_stack, std::any_cast<std::u32string&>(improvised_storage.emplace_back(std::move(u32str))).data());
           } break;
           default: {
-            throw std::runtime_error(std::string("Unknown argument: ") + std::to_string(si.subtype));
+            throw P7DumpUnknownArgumentException(si.subtype);
           } break;
         }
       }

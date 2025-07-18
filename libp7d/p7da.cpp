@@ -3,6 +3,8 @@
 
 #include "p7da.h"
 
+#include "p7exceptions.h"
+
 #include <codecvt>
 #include <cstring>
 #include <filesystem>
@@ -10,7 +12,6 @@
 #include <ios>
 #include <locale>
 #include <memory>
-#include <stdexcept>
 #include <string_view>
 
 namespace {
@@ -277,13 +278,13 @@ class P7DumpMemAnalyser: public P7DumpAnalyser {
   }
 
   void io_read(void* buffer, size_t nread) override final {
-    if ((m_memCurPos + nread) > m_memSize) throw std::runtime_error("Too big block read requested");
+    if ((m_memCurPos + nread) > m_memSize) throw P7DumpNotEnoughBufferSpaceException(m_memSize - m_memCurPos, nread, false);
     std::memcpy(buffer, (char*)m_memPtr + m_memCurPos, nread);
     m_memCurPos += nread;
   }
 
   void io_skip(size_t nbytes) override final {
-    if ((m_memCurPos + nbytes) > m_memSize) throw std::runtime_error("Too many bytes skip requested");
+    if ((m_memCurPos + nbytes) > m_memSize) throw P7DumpNotEnoughBufferSpaceException(m_memSize - m_memCurPos, nbytes, true);
     m_memCurPos += nbytes;
   }
 

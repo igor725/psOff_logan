@@ -59,7 +59,7 @@ static void runAnalyser(std::unique_ptr<P7Dump> const& analyser) {
 
     printf("analyser->render() call finished with error!\n");
   } catch (std::exception const& ex) {
-    fprintf(stderr, "P7Dump exception: %s\n", ex.what());
+    fprintf(stderr, "Unhandled analyser exception: %s\n", ex.what());
   }
 }
 

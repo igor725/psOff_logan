@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <bit>
 #include <cstdint>
+#include <limits>
 #include <list>
 #include <string>
 #include <type_traits>
@@ -157,9 +158,11 @@ class P7Dump {
   std::unordered_map<uint8_t, StreamStorage> m_streams;
 
   protected:
-  std::endian m_endian;
-  uint32_t    m_processId  = 0;
-  uint64_t    m_createTime = 0;
+  bool validate();
 
-  p7string m_processName, m_hostName;
+  std::endian m_endian;
+  uint32_t    m_processId  = std::numeric_limits<uint32_t>::max();
+  uint64_t    m_createTime = std::numeric_limits<uint64_t>::max();
+
+  p7string m_processName = u"", m_hostName = u"";
 };
