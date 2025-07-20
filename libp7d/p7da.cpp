@@ -114,10 +114,15 @@ bool P7DumpAnalyser::render(StreamStorage& stream, TraceLineData const& tsd, p7s
         }
       } else if (mod.name == "libSceKernel") {
         if (!_monoSdkDetected) {
-          if (out.contains(u".mono/config")) _monoSdkDetected = true;
+          // todo regex?
+          if (out.contains(u".mono\\config")) _monoSdkDetected = true;
+          if (!_monoSdkDetected && out.contains(u".mono/config")) _monoSdkDetected = true;
         }
         if (!_unityEngineDetected) {
-          if (out.contains(u"/unity default resources")) _unityEngineDetected = true;
+          if (out.contains(u"unity default resources")) _unityEngineDetected = true;
+        }
+        if (!_unrealEngineDetected) {
+          if (out.contains(u"UE3_logo.")) _unrealEngineDetected = true;
         }
       } else if (mod.name == "Kernel") {
         if (out.starts_with(u"psOff.")) {
