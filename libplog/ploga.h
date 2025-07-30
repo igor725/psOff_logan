@@ -3,6 +3,7 @@
 #include "third_party/json.hpp"
 
 #include <filesystem>
+#include <istream>
 
 class PLogAnalyzer {
   public:
@@ -58,9 +59,12 @@ class PLogAnalyzer {
     uint32_t threadId;
   };
 
+  PLogAnalyzer() {}
+
   PLogAnalyzer(std::filesystem::path const& path);
   PLogAnalyzer(const char* data, size_t dataSize);
 
+  void readstream(std::istream& stream);
   bool render(LineInfo const& lineInfo, std::string_view out);
 
   std::string spit() const;
@@ -76,4 +80,5 @@ class PLogAnalyzer {
 #endif
 
 EXPORT std::unique_ptr<PLogAnalyzer> createFileAnalyser(std::filesystem::path const& fpath);
+EXPORT std::unique_ptr<PLogAnalyzer> createStreamAnalyser(std::istream& stream);
 EXPORT std::unique_ptr<PLogAnalyzer> createMemAnalyser(const char* memory, size_t size);

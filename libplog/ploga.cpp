@@ -1,6 +1,7 @@
 #include "ploga.h"
 
 #include <fstream>
+#include <istream>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -48,17 +49,31 @@ static std::string_view parseLogLine(std::string const& input, PLogAnalyzer::Lin
     strpos = keyEnd + 1;
   } while (currKey < 8);
 
-  return inputView.substr(strpos);
+  auto out = inputView.substr(strpos);
+  if (out.ends_with('\r')) out = out.substr(0, out.length() - 1);
+  return out;
 }
 
-PLogAnalyzer::PLogAnalyzer(const char* data, size_t dataSize) {}
+class CharArrayBuffer: public std::streambuf {
+  public:
+  CharArrayBuffer(const char* data, size_t dataSize) { setg(const_cast<char*>(data), const_cast<char*>(data), const_cast<char*>(data) + dataSize); }
+};
+
+PLogAnalyzer::PLogAnalyzer(const char* data, size_t dataSize) {
+  CharArrayBuffer cbuff(data, dataSize);
+
+  std::istream strm(&cbuff);
+  readstream(strm);
+}
 
 PLogAnalyzer::PLogAnalyzer(std::filesystem::path const& path) {
-
   std::ifstream file(path);
+  readstream(file);
+}
 
+void PLogAnalyzer::readstream(std::istream& stream) {
   std::string line;
-  while (std::getline(file, line)) {
+  while (std::getline(stream, line)) {
     LineInfo li;
 
     auto out = parseLogLine(line, li);
