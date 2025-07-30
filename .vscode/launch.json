@@ -7,19 +7,8 @@
 			"request": "launch",
 			"program": "psOff_logan.exe",
 			"args": [
-				// "C:\\Users\\igorg\\Downloads\\20250227-191725.000.p7d", // Child process, Phyre Engine
-				// "C:\\Users\\igorg\\Downloads\\20250227-113851.000.p7d", // Main process, validation errors, shader gen errors
-				// "C:\\Users\\igorg\\Downloads\\20250227-224312.000.p7d", // Child process, Unity
-				// "C:\\Users\\igorg\\Downloads\\20241215-202940.000.p7d", // Child process, GameMaker, no trophy key
-				// "C:\\Users\\igorg\\Downloads\\20250226-165944.000.p7d", // Child process, Unity, Mono, pointers
-				// "C:\\Users\\igorg\\Downloads\\20250225-082726.000.p7d", // Child process, Unreal, exception
-				// "C:\\Users\\igorg\\Downloads\\20250124-153836.000.p7d", // Child process, Unreal, exception
-				// "C:\\Users\\igorg\\Downloads\\20241215-224229.000.p7d", // Main process, validation, shader shit etc
-				// "C:\\Users\\igorg\\Downloads\\20241215-224238.000.p7d", // Child process, criware, wwise
-				// "https://github.com/user-attachments/files/21320526/ivprl53h11dhs4ql.zip" // Bugged, unexpected EOF
-				// "https://github.com/user-attachments/files/19029293/20250228-173928.000.p7d.zip", // Child process, zip archived
-				// "--noblock"
-				// "https://github.com/user-attachments/files/20740982/20250614-203630.000.p7d.zip"
+				// "D:\\psOff\\psOff_premium\\_buildRelease\\_Install\\logs\\20250729-194404.1823299-psOff-000.plog",
+				"D:\\psOff\\psOff_premium\\_buildRelease\\_Install\\logs\\20250729-194411.7204530-psOff_tunnel-000.plog",
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceRoot}/build/.install/bin/",

@@ -19,89 +19,65 @@ include_directories(BEFORE
 	${THIRDPARTY_WORKDIR}/include/
 )
 
-add_subdirectory(libp7d)
+add_subdirectory(libplog)
 
-if(CMAKE_JS_VERSION)
-	add_library(psOff_logan SHARED
-		nodelib/main.cpp
+# Build third party stuff
 
-		${CMAKE_JS_SRC}
-	)
+ExternalProject_Add(zlib_project
+	GIT_REPOSITORY https://github.com/madler/zlib.git
+	GIT_TAG v1.3.1
+	CMAKE_ARGS
+	-DCMAKE_BUILD_TYPE:STRING=Release
+	-DCMAKE_INSTALL_PREFIX=${THIRDPARTY_WORKDIR}
+	-DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
+	-DCMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+	-DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}
 
-	execute_process(COMMAND node -p "require('node-addon-api').include"
-								WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-								OUTPUT_VARIABLE NODE_ADDON_API_DIR)
-	string(REPLACE "\n" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
-	string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
-	target_include_directories(psOff_logan PRIVATE ${NODE_ADDON_API_DIR})
+	-DZLIB_BUILD_TESTING:BOOL=OFF
+	-DZLIB_BUILD_STATIC:BOOL=OFF
+	-DZLIB_BUILD_MINIZIP:BOOL=OFF
+)
 
-	add_compile_definitions(-DNAPI_VERSION=8)
-	set_target_properties(psOff_logan PROPERTIES PREFIX "" SUFFIX ".node")
-	target_include_directories(psOff_logan PRIVATE ${CMAKE_JS_INC})
-	target_link_libraries(psOff_logan PRIVATE ${CMAKE_JS_LIB})
+ExternalProject_Add(libzip_project
+	GIT_REPOSITORY https://github.com/nih-at/libzip.git
+	GIT_TAG v1.11.3
+	CMAKE_ARGS
+	-DCMAKE_BUILD_TYPE:STRING=Release
+	-DCMAKE_INSTALL_PREFIX=${THIRDPARTY_WORKDIR}
+	-DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
+	-DCMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
+	-DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}
 
-	if(MSVC AND CMAKE_JS_NODELIB_DEF AND CMAKE_JS_NODELIB_TARGET)
-		execute_process(COMMAND ${CMAKE_AR} /def:${CMAKE_JS_NODELIB_DEF} /out:${CMAKE_JS_NODELIB_TARGET} ${CMAKE_STATIC_LINKER_FLAGS})
-	endif()
-else()
-	# Build third party stuff
+	-DENABLE_COMMONCRYPTO:BOOL=OFF
+	-DENABLE_GNUTLS:BOOL=OFF
+	-DENABLE_MBEDTLS:BOOL=OFF
+	-DENABLE_OPENSSL:BOOL=OFF
+	-DENABLE_FDOPEN:BOOL=OFF
+	-DBUILD_TOOLS:BOOL=OFF
+	-DBUILD_REGRESS:BOOL=OFF
+	-DBUILD_EXAMPLES:BOOL=OFF
+	-DBUILD_DOC:BOOL=OFF
+	-DENABLE_ZSTD:BOOL=OFF
+	-DENABLE_LZMA:BOOL=OFF
+	-DENABLE_BZIP2:BOOL=OFF
+	-DLIBZIP_DO_INSTALL:BOOL=ON
+)
+ExternalProject_Add_StepDependencies(libzip_project install zlib_project)
 
-	ExternalProject_Add(zlib_project
-		GIT_REPOSITORY https://github.com/madler/zlib.git
-		GIT_TAG v1.3.1
-		CMAKE_ARGS
-		-DCMAKE_BUILD_TYPE:STRING=Release
-		-DCMAKE_INSTALL_PREFIX=${THIRDPARTY_WORKDIR}
-		-DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
-		-DCMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-		-DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}
+# - Build third party stuff
 
-		-DZLIB_BUILD_TESTING:BOOL=OFF
-		-DZLIB_BUILD_STATIC:BOOL=OFF
-		-DZLIB_BUILD_MINIZIP:BOOL=OFF
-	)
+add_executable(psOff_logan
+	main.cpp
+)
 
-	ExternalProject_Add(libzip_project
-		GIT_REPOSITORY https://github.com/nih-at/libzip.git
-		GIT_TAG v1.11.3
-		CMAKE_ARGS
-		-DCMAKE_BUILD_TYPE:STRING=Release
-		-DCMAKE_INSTALL_PREFIX=${THIRDPARTY_WORKDIR}
-		-DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
-		-DCMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-		-DCMAKE_SHARED_LINKER_FLAGS=${CMAKE_SHARED_LINKER_FLAGS}
+target_link_libraries(psOff_logan PRIVATE winhttp zip)
+add_dependencies(psOff_logan libzip_project)
 
-		-DENABLE_COMMONCRYPTO:BOOL=OFF
-		-DENABLE_GNUTLS:BOOL=OFF
-		-DENABLE_MBEDTLS:BOOL=OFF
-		-DENABLE_OPENSSL:BOOL=OFF
-		-DENABLE_FDOPEN:BOOL=OFF
-		-DBUILD_TOOLS:BOOL=OFF
-		-DBUILD_REGRESS:BOOL=OFF
-		-DBUILD_EXAMPLES:BOOL=OFF
-		-DBUILD_DOC:BOOL=OFF
-		-DENABLE_ZSTD:BOOL=OFF
-		-DENABLE_LZMA:BOOL=OFF
-		-DENABLE_BZIP2:BOOL=OFF
-		-DLIBZIP_DO_INSTALL:BOOL=ON
-	)
-	ExternalProject_Add_StepDependencies(libzip_project install zlib_project)
-
-	# - Build third party stuff
-
-	add_executable(psOff_logan
-		standalone/main.cpp
-	)
-	
-	target_link_libraries(psOff_logan PRIVATE winhttp zip)
-	add_dependencies(psOff_logan libzip_project)
-endif()
-
-add_dependencies(psOff_logan p7d)
+add_dependencies(psOff_logan plog)
 
 target_link_directories(psOff_logan PRIVATE ${THIRDPARTY_WORKDIR}/lib/)
 
-target_link_libraries(psOff_logan PRIVATE p7d)
+target_link_libraries(psOff_logan PRIVATE plog)
 
 install(DIRECTORY "${THIRDPARTY_WORKDIR}/bin/" DESTINATION bin)
 install(TARGETS psOff_logan COMPONENT psOff_logan DESTINATION bin)
