@@ -8,8 +8,8 @@
 			"program": "psOff_logan.exe",
 			"args": [
 				// "D:\\psOff\\psOff_premium\\_buildRelease\\_Install\\logs\\20250729-194404.1823299-psOff-000.plog",
-				// "D:\\psOff\\psOff_premium\\_buildRelease\\_Install\\logs\\20250729-194411.7204530-psOff_tunnel-000.plog",
-				"https://github.com/user-attachments/files/21513004/20250730-153325.4839568-psOff_tunnel-000.zip"
+				"D:\\psOff\\psOff_premium\\_buildRelease\\_Install\\logs\\20250729-194411.7204530-psOff_tunnel-000.plog",
+				// "https://github.com/user-attachments/files/21513004/20250730-153325.4839568-psOff_tunnel-000.zip"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceRoot}/build/.install/bin/",

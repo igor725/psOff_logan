@@ -1,4 +1,5 @@
 #include "libplog/ploga.h"
+#include "third_party/httplib.h"
 #include "zipconf.h"
 
 #include <Windows.h>
@@ -10,9 +11,11 @@
 #include <cstring>
 #include <filesystem>
 #include <format>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -49,11 +52,25 @@ enum LogAnExitCodes : int32_t {
   _ZipErrorsEnd = 300,
 };
 
+std::thread createHttpServer(std::string const&& loglines) {
+  return std::thread(
+      [](std::string const&& lines) {
+        httplib::Server svr;
+
+        svr.Get("/", [&lines](httplib::Request const& req, httplib::Response& resp) { resp.set_content(lines, "text/plain"); });
+
+        svr.listen("0.0.0.0", 13370);
+      },
+      std::move(loglines));
+}
+
 int32_t main(int32_t argc, char* argv[]) {
   if (argc < 2) {
     fprintf(stderr, "Usage: %s <p7d file path> [--noblock]", argv[0]);
     return LogAnExitCodes::ArgumentFail;
   }
+
+  std::thread httpServer;
 
   if (auto argLink = std::string_view(argv[1]); !argLink.empty()) {
     std::unique_ptr<PLogAnalyzer> analyser;
@@ -256,6 +273,7 @@ int32_t main(int32_t argc, char* argv[]) {
           };
 
           std::vector<MenuEntry> files;
+          std::string            serveData;
 
           zip_int64_t num_files = zip_get_num_entries(zarc, 0);
           for (zip_int64_t i = 0; i < num_files; ++i) {
@@ -281,7 +299,7 @@ int32_t main(int32_t argc, char* argv[]) {
             }
 
             char plogdata[0xe];
-            if (zip_fread(zf, plogdata, sizeof(plogdata)) != sizeof(plogdata)) { // Read whole p7d header
+            if (zip_fread(zf, plogdata, sizeof(plogdata)) != sizeof(plogdata)) { // Read plog line
               fprintf(stderr, "File %s skipped: %s\n", sb.name, zip_strerror(zarc));
               zip_fclose(zf);
               continue;
@@ -297,6 +315,19 @@ int32_t main(int32_t argc, char* argv[]) {
             }
 
             files.emplace_back(i, sb.size, std::string(plogdatasv.substr(0, plogend)));
+
+            {
+              if (!serveData.empty() && serveData.back() != '\n') serveData.push_back('\n');
+              auto const prevSize = serveData.size();
+              serveData.resize(prevSize + sb.size);
+              std::memcpy(serveData.data() + prevSize, plogdata, sizeof(plogdata));
+              auto const restSize = sb.size - sizeof(plogdata);
+              if (zip_fread(zf, serveData.data() + prevSize + sizeof(plogdata), restSize) != restSize) {
+                fprintf(stderr, "Warning, failed to read %s for HTTP serving purposes\n", sb.name);
+                serveData.resize(prevSize);
+              }
+            }
+
             zip_fclose(zf);
           }
 
@@ -328,6 +359,8 @@ int32_t main(int32_t argc, char* argv[]) {
             zip_fclose(zf);
             return LogAnExitCodes::Success;
           };
+
+          httpServer = createHttpServer(std::move(serveData));
 
           if (files.size() > 1) { // Entering interactive mode
             while (true) {
@@ -366,6 +399,9 @@ int32_t main(int32_t argc, char* argv[]) {
             zip_close(zarc);
             zip_source_close(zsrc);
           }
+        } else {
+          std::string buf(outdata, outdata + outdatasize);
+          httpServer = createHttpServer(std::move(buf));
         }
 
         analyser = createMemAnalyser(outdata, outdatasize);
@@ -374,7 +410,15 @@ int32_t main(int32_t argc, char* argv[]) {
         return LogAnExitCodes::BufferFail;
       }
     } else if (auto fpath = std::filesystem::path(argLink); std::filesystem::exists(fpath)) {
-      analyser = createFileAnalyser(argv[1]);
+      {
+        std::ifstream f(fpath);
+
+        std::stringstream ss;
+        ss << f.rdbuf();
+
+        httpServer = createHttpServer(ss.str());
+      }
+      analyser = createFileAnalyser(fpath);
     }
 
     if (analyser != nullptr) {
