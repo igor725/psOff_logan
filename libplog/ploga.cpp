@@ -81,6 +81,48 @@ void PLogAnalyzer::readstream(std::istream& stream) {
       break;
     }
   }
+
+  auto& labels = m_jsonInfo["labels"];
+  auto& hints  = m_jsonInfo["hints"];
+
+  if (_isChildprocess) {
+    if (_unityEngineDetected) labels.push_back("engine-unity");
+    if (_unrealEngineDetected) labels.push_back("engine-unreal");
+    if (_cryEngineDetected) labels.push_back("engine-cry");
+    if (_phyreEngineDetected) labels.push_back("engine-phyre");
+    if (_gmakerEngineDetected) labels.push_back("engine-gamemaker");
+    if (_naughtyEngineDetected) labels.push_back("engine-naughty");
+    if (_irrlichtEngineDetected) labels.push_back("engine-irrlicht");
+    if (_exceptionDetected) labels.push_back("exception");
+    if (_fmodSdkDetected) labels.push_back("sdk-fmod");
+    if (_monoSdkDetected) labels.push_back("sdk-mono");
+    if (_criSdkDetected) labels.push_back("sdk-criware");
+    if (_havokSdkDetected) labels.push_back("sdk-havok");
+    if (_wwiseSdkDetected) labels.push_back("sdk-wwise");
+  } else {
+    if (_inputNotFoundHint)
+      hints.push_back("One of your users has the input device set incorrectly, if you can't control the PS4 app, this could be the cause.");
+    if (_nvidiaHint)
+      hints.push_back("You are using an NVIDIA graphics card, these cards have many issues on our emulator that may not be present on AMD cards.");
+    if (_hintAndnPatched || _hintExtrqPatched || _hintInsertqPatched) {
+      std::string unsupported = "Your CPU does not support some instructions (";
+      if (_hintAndnPatched) unsupported += "ANDN, ";
+      if (_hintExtrqPatched) unsupported += "EXTRQ, ";
+      if (_hintInsertqPatched) unsupported += "INSERTQ, ";
+      hints.push_back(unsupported + ") and they have been patched");
+    }
+    if (_hintAjmFound) hints.push_back("This game uses hardware audio encoding/decoding");
+    if (_vkValidation) labels.push_back("graphics");
+    if (_shaderGenTodo) labels.push_back("shader-gen");
+    if (_vkNoDevices) {
+      hints.push_back("Your GPU is not supported at the moment");
+      labels.push_back("badgpu");
+    }
+  }
+
+  if (_hintTrophyKey)
+    hints.push_back("You don't have the trophy key installed, this can cause problems in games, also you won't be able to see the list of trophies you have "
+                    "received. To solve this problem, check #faq channel in on Discord Server.");
 }
 
 bool PLogAnalyzer::render(LineInfo const& lineInfo, std::string_view out) {
@@ -179,6 +221,11 @@ bool PLogAnalyzer::render(LineInfo const& lineInfo, std::string_view out) {
           if (out.contains("UE3_logo.")) _unrealEngineDetected = true;
         }
       } else if (lineInfo.module == "Kernel") {
+        if (out == "-> client shutdown request") {
+          // Stop processing log lines after the Stop button press
+          // the rest is unrelated to the game itself.
+          return false;
+        }
         if (out.starts_with("psOff.")) {
           auto value = out.substr(out.find_first_of('=') + 2);
 
