@@ -40,11 +40,12 @@ class PLogAnalyzer {
     bool _dialogSdkDetected : 1 = false;
 
     // Problems
-    bool _shaderGenTodo     : 1 = false;
-    bool _vkValidation      : 1 = false;
-    bool _exceptionDetected : 1 = false;
-    bool _netStuffDetected  : 1 = false;
-    bool _vkNoDevices       : 1 = false;
+    bool _shaderGenTodo         : 1 = false;
+    bool _vkValidation          : 1 = false;
+    bool _exceptionDetected     : 1 = false;
+    bool _netStuffDetected      : 1 = false;
+    bool _vkNoDevices           : 1 = false;
+    bool _missingSymbolDetected : 1 = false;
   };
 
   struct LineInfo {

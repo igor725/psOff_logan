@@ -99,6 +99,7 @@ void PLogAnalyzer::readstream(std::istream& stream) {
     if (_criSdkDetected) labels.push_back("sdk-criware");
     if (_havokSdkDetected) labels.push_back("sdk-havok");
     if (_wwiseSdkDetected) labels.push_back("sdk-wwise");
+    if (_missingSymbolDetected) labels.push_back("missing-symbol");
   } else {
     if (_inputNotFoundHint)
       hints.push_back("One of your users has the input device set incorrectly, if you can't control the PS4 app, this could be the cause.");
@@ -126,6 +127,8 @@ void PLogAnalyzer::readstream(std::istream& stream) {
 }
 
 bool PLogAnalyzer::render(LineInfo const& lineInfo, std::string_view out) {
+  if (out.empty()) return true; // Skip line rendering
+
   if (!_processTypeGuessed) {
     _processTypeGuessed = true;
     if ((_isChildprocess = (out == "child process")) == true) { // Prepare child process things
@@ -220,6 +223,8 @@ bool PLogAnalyzer::render(LineInfo const& lineInfo, std::string_view out) {
         if (!_unrealEngineDetected) {
           if (out.contains("UE3_logo.")) _unrealEngineDetected = true;
         }
+      } else if (lineInfo.module == "runtime") {
+        if (out.contains("Missing Symbol|")) _missingSymbolDetected = true;
       } else if (lineInfo.module == "Kernel") {
         if (out == "-> client shutdown request") {
           // Stop processing log lines after the Stop button press
